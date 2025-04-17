@@ -35,7 +35,7 @@ public class StaffingRequestService {
         User manager =userRepository.findById(dto.getManagerId())
                 .orElseThrow(()-> new RuntimeException("Manager not found with id: " + dto.getManagerId()));
 
-        Location location = locationRepository.findById(dto.getManagerId())
+        Location location = locationRepository.findById(dto.getLocationId())
                 .orElseThrow(()-> new RuntimeException("Location not found with id: " + dto.getLocationId()));
 
         //Map request data

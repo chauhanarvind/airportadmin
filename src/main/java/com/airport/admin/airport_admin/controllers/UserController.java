@@ -24,7 +24,7 @@ public class UserController {
         return ResponseEntity.ok(createdUser);
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<User>> getAllUsers(){
         return  ResponseEntity.ok(userService.getAllUsers());
     }
