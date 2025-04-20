@@ -16,10 +16,10 @@ public class User {
     private Long id;
 
     @Column(name="first_name", nullable = false)
-    private String firstname;
+    private String firstName;
 
     @Column(name="last_name", nullable = false)
-    private String lastname;
+    private String lastName;
 
     @Column(name="password",nullable = false)
     private String password;
@@ -31,8 +31,14 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @ManyToOne
+    @JoinColumn(name = "job_level_id", nullable = false)
+    private JobLevel jobLevel;
+
+    @ManyToOne
+    @JoinColumn(name = "job_role_id", nullable = false)
+    private JobRole jobRole;
+
     @Column(name="created_at", updatable = false, insertable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
-
 }

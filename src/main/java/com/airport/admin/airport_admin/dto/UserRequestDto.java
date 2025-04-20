@@ -1,8 +1,11 @@
 package com.airport.admin.airport_admin.dto;
 
+import com.airport.admin.airport_admin.models.JobLevel;
+import com.airport.admin.airport_admin.models.JobRole;
 import com.airport.admin.airport_admin.models.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +27,12 @@ public class UserRequestDto {
     @Size(min=6, message = "Password must be at least 6 characters long")
     private String password;
 
-    @NotBlank(message = "Role is required")
-    private String role;
+    @NotNull(message = "Role id cannot be null")
+    private Long roleId;
+
+    @NotNull(message = "Job role id cannot be null")
+    private Long jobRoleId;
+
+    @NotNull(message = "Job Level id cannot be null")
+    private Long jobLevelId;
 }

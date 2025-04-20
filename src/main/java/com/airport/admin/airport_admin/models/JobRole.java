@@ -15,6 +15,9 @@ public class JobRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name="role_name",  nullable = false, unique = true)
+    private String roleName;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private JobCategory category;

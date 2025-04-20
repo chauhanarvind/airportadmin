@@ -1,12 +1,15 @@
 package com.airport.admin.airport_admin.services;
 
 import com.airport.admin.airport_admin.dto.UserRequestDto;
+import com.airport.admin.airport_admin.models.JobLevel;
+import com.airport.admin.airport_admin.models.JobRole;
 import com.airport.admin.airport_admin.models.Role;
 import com.airport.admin.airport_admin.models.User;
+import com.airport.admin.airport_admin.repositories.JobLevelRepository;
+import com.airport.admin.airport_admin.repositories.JobRoleRepository;
 import com.airport.admin.airport_admin.repositories.UserRepository;
 import com.airport.admin.airport_admin.repositories.RoleRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,27 +18,42 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final JobLevelRepository jobLevelRepository;
+    private final JobRoleRepository jobRoleRepository;
 
-    private UserService(UserRepository userRepository, RoleRepository roleRepository){
+    private UserService(UserRepository userRepository, RoleRepository roleRepository,
+                        JobLevelRepository jobLevelRepository, JobRoleRepository jobRoleRepository){
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.jobLevelRepository = jobLevelRepository;
+        this.jobRoleRepository = jobRoleRepository;
     }
 
     public User createUser(UserRequestDto userRequestDto){
+        System.out.println("user request dto =>>>" + userRequestDto);
+
         if(userRepository.findByEmail(userRequestDto.getEmail()).isPresent()){
-            throw new RuntimeException("Email already exists:" + userRequestDto.getEmail());
+            throw new RuntimeException("Email already exists");
         }
 
-        Role role = roleRepository.findByName(userRequestDto.getRole())
-                .orElseThrow(()-> new RuntimeException("Role not found:" + userRequestDto.getRole()));
+        Role role = roleRepository.findById(userRequestDto.getRoleId())
+                .orElseThrow(()-> new RuntimeException("User Role not found"));
 
+        JobLevel jobLevel = jobLevelRepository.findById(userRequestDto.getJobLevelId())
+                .orElseThrow(()-> new RuntimeException("Job Level Not Found"));
+
+        JobRole jobRole = jobRoleRepository.findById(userRequestDto.getJobRoleId())
+                .orElseThrow(()-> new RuntimeException("Job Role Not Found"));
 
         User user = new User();
-        user.setFirstname(userRequestDto.getFirstName());
-        user.setLastname(userRequestDto.getLastName());
+        user.setFirstName(userRequestDto.getFirstName());
+        user.setLastName(userRequestDto.getLastName());
         user.setEmail(userRequestDto.getEmail());
         user.setPassword(userRequestDto.getPassword());
         user.setRole(role);
+        user.setJobLevel(jobLevel);
+        user.setJobRole(jobRole);
+
     return userRepository.save(user);
     }
 
