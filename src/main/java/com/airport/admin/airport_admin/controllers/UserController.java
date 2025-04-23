@@ -24,6 +24,13 @@ public class UserController {
         return ResponseEntity.ok(createdUser);
     }
 
+    @PostMapping("/{id}")
+        public ResponseEntity<?> updateUser(@Valid @RequestBody UserRequestDto userRequestDto){
+            User updateUser = userService.updateUser(userRequestDto);
+            return ResponseEntity.ok(updateUser);
+        }
+
+
     @GetMapping("/")
     public ResponseEntity<List<User>> getAllUsers(){
         return  ResponseEntity.ok(userService.getAllUsers());

@@ -13,6 +13,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserRequestDto {
+    private Long Id;
+
     @NotBlank(message = "First name is required")
     private String firstName;
 
@@ -23,7 +25,10 @@ public class UserRequestDto {
     @Email(message = "Invalid format")
     private String email;
 
-    @NotBlank(message = "Password is required")
+//    @NotBlank(message = "Password is required")
+//    no need for the above here because we are
+//    validating this on create service layer
+//    and updating it on update
     @Size(min=6, message = "Password must be at least 6 characters long")
     private String password;
 

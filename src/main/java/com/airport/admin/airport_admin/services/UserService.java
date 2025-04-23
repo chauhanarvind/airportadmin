@@ -36,15 +36,17 @@ public class UserService {
             throw new RuntimeException("Email already exists");
         }
 
-        Role role = roleRepository.findById(userRequestDto.getRoleId())
-                .orElseThrow(()-> new RuntimeException("User Role not found"));
+        Role role = resolveRole(userRequestDto.getRoleId());
+        JobLevel jobLevel = resolveJobLevel(userRequestDto.getJobLevelId());
+        JobRole jobRole = resolveJobRole(userRequestDto.getJobRoleId());
 
-        JobLevel jobLevel = jobLevelRepository.findById(userRequestDto.getJobLevelId())
-                .orElseThrow(()-> new RuntimeException("Job Level Not Found"));
-
-        JobRole jobRole = jobRoleRepository.findById(userRequestDto.getJobRoleId())
-                .orElseThrow(()-> new RuntimeException("Job Role Not Found"));
-
+        String rawPassword = userRequestDto.getPassword();
+        if(rawPassword == null || rawPassword.isBlank()){
+            throw new RuntimeException("Password is required for new users");
+        }
+        if(rawPassword.length() < 6){
+            throw  new RuntimeException("Password must be at least 6 characters");
+        }
         User user = new User();
         user.setFirstName(userRequestDto.getFirstName());
         user.setLastName(userRequestDto.getLastName());
@@ -57,11 +59,48 @@ public class UserService {
     return userRepository.save(user);
     }
 
+    public User updateUser(UserRequestDto userRequestDto){
+
+
+        User user = userRepository.findById(userRequestDto.getId())
+                .orElseThrow(() -> new RuntimeException("User does not exist"));
+
+
+        Role role = resolveRole(userRequestDto.getRoleId());
+        JobRole jobRole= resolveJobRole(userRequestDto.getJobRoleId());
+        JobLevel jobLevel= resolveJobLevel(userRequestDto.getJobLevelId());
+
+        user.setFirstName(userRequestDto.getFirstName());
+        user.setLastName(userRequestDto.getLastName());
+        user.setEmail(userRequestDto.getEmail());
+        user.setRole(role);
+        user.setJobLevel(jobLevel);
+        user.setJobRole(jobRole);
+
+        return userRepository.save(user);
+
+    }
+
     public List<User> getAllUsers(){
         return userRepository.findAll();
     }
 
     public Optional<User> findUserByEmail(String email){
         return userRepository.findByEmail(email);
+    }
+
+    private Role resolveRole(Long roleId){
+        return roleRepository.findById(roleId)
+                .orElseThrow(()-> new RuntimeException("User role not found"));
+    }
+
+    private JobRole resolveJobRole(Long jobRoleId){
+        return jobRoleRepository.findById(jobRoleId)
+                .orElseThrow(()-> new RuntimeException("Job role does not exists"));
+    }
+
+    private JobLevel resolveJobLevel(Long jobLevelId){
+        return jobLevelRepository.findById(jobLevelId)
+                .orElseThrow(()-> new RuntimeException("Job Level Not Found"));
     }
 }
