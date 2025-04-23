@@ -23,7 +23,7 @@ public class StaffingRequestItem {
 
     @ManyToOne
     @JoinColumn(name = "job_role_id", nullable = false)
-    private JobRole role;
+    private JobRole jobRole;
 
     @ManyToOne
     @JoinColumn(name = "job_level_id", nullable = false)

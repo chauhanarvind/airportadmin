@@ -48,6 +48,7 @@ public class UserService {
             throw  new RuntimeException("Password must be at least 6 characters");
         }
         User user = new User();
+
         user.setFirstName(userRequestDto.getFirstName());
         user.setLastName(userRequestDto.getLastName());
         user.setEmail(userRequestDto.getEmail());
@@ -79,6 +80,13 @@ public class UserService {
 
         return userRepository.save(user);
 
+    }
+
+    public void deleteUser(UserRequestDto userRequestDto){
+        User user = userRepository.findById(userRequestDto.getId())
+                .orElseThrow(() -> new RuntimeException("User does not exist"));
+
+        userRepository.delete(user);
     }
 
     public List<User> getAllUsers(){

@@ -9,17 +9,17 @@ import lombok.Setter;
 @Setter
 public class StaffingRequestItemDto {
     @NotNull(message = "Job role is required")
-    private Long job_role_id ;
+    private Long jobRoleId ;
 
     @NotNull(message = "Job level is required")
-    private Long job_level_id;
+    private Long jobLevelId;
 
     @NotNull(message = "Count is required")
-    private Integer required_count;
+    private Integer requiredCount;
 
     @NotBlank(message = "Start time is required")
-    private String start_time; //"HH:MM" format
+    private String startTime; //"HH:MM" format
 
     @NotBlank(message = "End time is required")
-    private String end_time; //"HH:MM" format
+    private String endTime; //"HH:MM" format
 }
