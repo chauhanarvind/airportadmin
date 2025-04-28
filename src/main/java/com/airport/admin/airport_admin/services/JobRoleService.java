@@ -51,8 +51,8 @@ public class JobRoleService {
         return  jobRoleRepository.save(jobRole);
     }
 
-    public void deleteJobRole(JobRoleDto jobRoleDto){
-        JobRole jobRole = jobRoleRepository.findById(jobRoleDto.getId())
+    public void deleteJobRole(Long id){
+        JobRole jobRole = jobRoleRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Job role does not exist"));
 
         jobRoleRepository.delete(jobRole);

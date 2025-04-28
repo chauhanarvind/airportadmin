@@ -37,12 +37,10 @@ public class JobLevelService {
         return jobLevelRepository.save(jobLevel);
     }
 
-    public void deleteJobLevel(JobLevelDto jobLevelDto){
-        JobLevel jobLevel = jobLevelRepository.findById(jobLevelDto.getId())
+    public void deleteJobLevel(Long id){
+        JobLevel jobLevel = jobLevelRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Job level does not exist"));
 
         jobLevelRepository.delete(jobLevel);
     }
-
-
 }
