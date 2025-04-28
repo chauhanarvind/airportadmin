@@ -21,12 +21,12 @@ public class JobCategoryService {
     }
 
     public JobCategory createJobCategory(JobCategoryDto jobCategoryDto){
-        if(jobCategoryRepository.findByJobCategoryName(jobCategoryDto.getCategoryName()).isPresent()){
+        if(jobCategoryRepository.findByCategoryName(jobCategoryDto.getCategoryName()).isPresent()){
             throw new RuntimeException("Job Category with this name already exists");
         }
 
         JobCategory jobCategory = new JobCategory();
-        jobCategory.setCategoryName(jobCategory.getCategoryName());
+        jobCategory.setCategoryName(jobCategoryDto.getCategoryName());
         return jobCategoryRepository.save(jobCategory);
     }
 
@@ -34,13 +34,13 @@ public class JobCategoryService {
         JobCategory jobCategory = jobCategoryRepository.findById(jobCategoryDto.getId())
                 .orElseThrow(()-> new RuntimeException("Job category does not exist"));
 
-        jobCategory.setCategoryName(jobCategory.getCategoryName());
+        jobCategory.setCategoryName(jobCategoryDto.getCategoryName());
 
         return jobCategoryRepository.save(jobCategory);
     }
 
-    public void deleteJobCategory(JobCategoryDto jobCategoryDto){
-        JobCategory jobCategory = jobCategoryRepository.findById(jobCategoryDto.getId())
+    public void deleteJobCategory(Long id){
+        JobCategory jobCategory = jobCategoryRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Job category does not exist"));
 
         jobCategoryRepository.delete(jobCategory);

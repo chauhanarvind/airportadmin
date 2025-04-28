@@ -19,7 +19,7 @@ public class JobLevelService {
     }
 
     public JobLevel createJobLevel(JobLevelDto jobLevelDto){
-        if(jobLevelRepository.findByjobLevelName(jobLevelDto.getLevelName()).isPresent()){
+        if(jobLevelRepository.findByLevelName(jobLevelDto.getLevelName()).isPresent()){
             throw new RuntimeException("Job level with this name already exists");
         }
 

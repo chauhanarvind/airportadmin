@@ -82,11 +82,11 @@ public class UserService {
 
     }
 
-    public void deleteUser(UserRequestDto userRequestDto){
-        User user = userRepository.findById(userRequestDto.getId())
-                .orElseThrow(() -> new RuntimeException("User does not exist"));
-
-        userRepository.delete(user);
+    public void deleteUser(Long id){
+        if(!userRepository.existsById(id)){
+            throw new RuntimeException("User does not exist");
+        }
+        userRepository.deleteById(id);
     }
 
     public List<User> getAllUsers(){

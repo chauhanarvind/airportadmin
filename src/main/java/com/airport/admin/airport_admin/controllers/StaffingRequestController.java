@@ -18,13 +18,7 @@ public class StaffingRequestController {
         this.staffingRequestService = staffingRequestService;
     }
 
-    //create a new request
-    @PostMapping
-    public ResponseEntity<StaffingRequest> createRequest(@Valid @RequestBody StaffingRequestsDto staffingRequestsDto){
-            StaffingRequest createdRequest = staffingRequestService.createNewStaffingRequest(staffingRequestsDto);
-            return ResponseEntity.ok(createdRequest);
 
-    }
 
 
     @GetMapping

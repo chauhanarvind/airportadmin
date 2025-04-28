@@ -1,6 +1,7 @@
 package com.airport.admin.airport_admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,6 @@ public class JobRoleDto {
     @NotBlank(message = "Job role name is required")
     private String roleName;
 
-    @NotBlank(message = "Job category id is required")
+    @NotNull(message = "Job category id is required")
     private Long categoryId;
 }

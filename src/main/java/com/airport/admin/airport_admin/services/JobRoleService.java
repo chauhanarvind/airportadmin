@@ -25,7 +25,7 @@ public class JobRoleService {
     }
 
     public JobRole createJobRole(JobRoleDto jobRoleDto){
-        if(jobRoleRepository.findByJobRoleName(jobRoleDto.getRoleName()).isPresent()){
+        if(jobRoleRepository.findByRoleName(jobRoleDto.getRoleName()).isPresent()){
             throw new RuntimeException("Job role with this name already exists");
         }
 

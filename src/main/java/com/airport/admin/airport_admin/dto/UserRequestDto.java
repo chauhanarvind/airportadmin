@@ -1,8 +1,4 @@
 package com.airport.admin.airport_admin.dto;
-
-import com.airport.admin.airport_admin.models.JobLevel;
-import com.airport.admin.airport_admin.models.JobRole;
-import com.airport.admin.airport_admin.models.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

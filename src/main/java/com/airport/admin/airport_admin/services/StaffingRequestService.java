@@ -29,58 +29,6 @@ public class StaffingRequestService {
         this.staffingRequestRepository= staffingRequestRepository;
     }
 
-    //create new staffing request service
-    public StaffingRequest createNewStaffingRequest(StaffingRequestsDto dto){
-        //validate manager and location
-        User manager =userRepository.findById(dto.getManagerId())
-                .orElseThrow(()-> new RuntimeException("Manager not found with id: " + dto.getManagerId()));
-
-        Location location = locationRepository.findById(dto.getLocationId())
-                .orElseThrow(()-> new RuntimeException("Location not found with id: " + dto.getLocationId()));
-
-        //Map request data
-        StaffingRequest request = new StaffingRequest();
-        request.setManager(manager);
-        request.setLocation(location);
-        request.setRequestType(RequestType.valueOf(dto.getRequestType()));
-
-        request.setReason(dto.getReason());
-        request.setStatus(RequestStatus.Pending);
-
-        //Process days and items;
-        List<StaffingRequestDay> days = new ArrayList<>();
-        dto.getDays().forEach(dayDto-> {
-            StaffingRequestDay day = new StaffingRequestDay();
-            day.setRequest(request);
-            day.setDate(dayDto.getDate());
-
-            List<StaffingRequestItem> items = new ArrayList<>();
-            dayDto.getItems().forEach(itemDto->{
-                StaffingRequestItem item = new StaffingRequestItem();
-                item.setDay(day);
-
-                JobRole jobRole =  jobRoleRepository.findById(itemDto.getJob_role_id())
-                        .orElseThrow(()-> new RuntimeException("Job role not found with id" + itemDto.getJob_role_id()));
-
-                JobLevel jobLevel = jobLevelRepository.findById(itemDto.getJob_level_id())
-                        .orElseThrow(()-> new RuntimeException("Job level not found with id " + itemDto.getJob_level_id()));
-
-                item.setRole(jobRole);
-                item.setJobLevel(jobLevel);
-                item.setRequiredCount(itemDto.getRequired_count());
-                item.setStartTime(itemDto.getStart_time());
-                item.setEndTime(itemDto.getEnd_time());
-
-                items.add(item);
-            });
-            day.setItems(items);
-            days.add(day);
-        });
-
-        request.setDays(days);
-        return staffingRequestRepository.save(request);
-    }
-
     public StaffingRequest getRequestById(Long id){
         return staffingRequestRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Request not found with id: " + id));

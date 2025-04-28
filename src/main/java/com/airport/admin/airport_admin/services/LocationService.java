@@ -14,7 +14,7 @@ public class LocationService {
     }
 
     public Location createLocation(LocationDto locationDto){
-        if(locationRepository.findByLocatioName(locationDto.getLocationName()).isPresent()){
+        if(locationRepository.findByLocationName(locationDto.getLocationName()).isPresent()){
             throw  new RuntimeException("Location with this name already exits");
         }
 
