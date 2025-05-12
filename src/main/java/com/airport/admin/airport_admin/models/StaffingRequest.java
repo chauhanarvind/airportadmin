@@ -1,5 +1,5 @@
 package com.airport.admin.airport_admin.models;
-import com.airport.admin.airport_admin.enums.RequestStatus;
+import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.enums.RequestType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -35,7 +35,7 @@ public class StaffingRequest {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private RequestStatus status = RequestStatus.Pending;
+    private LeaveStatus status = LeaveStatus.Pending;
 
     private String reason;
 
