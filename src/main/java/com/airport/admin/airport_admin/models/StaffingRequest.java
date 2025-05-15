@@ -35,7 +35,7 @@ public class StaffingRequest {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private LeaveStatus status = LeaveStatus.Pending;
+    private LeaveStatus status = LeaveStatus.PENDING;
 
     private String reason;
 
