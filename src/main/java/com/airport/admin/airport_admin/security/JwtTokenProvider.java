@@ -13,6 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
+import org.springframework.security.core.GrantedAuthority;
 
 @Component
 public class JwtTokenProvider {
@@ -27,18 +28,26 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
+        System.out.println("JwtTokenProvider initialized"); // confirm if it's loaded
         this.secretKey = getSignInKey();
     }
 
     public String generateToken(UserDetails userDetails) {
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .map(auth -> auth.replace("ROLE_", ""))
+                .orElse("UNKNOWN");
+
+
         return Jwts.builder()
                 .subject(userDetails.getUsername())
+                .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY))
                 .signWith(secretKey)
                 .compact();
     }
-
 
     public boolean validateToken(String token, UserDetails userDetails) {
         String email = getEmailFromToken(token);

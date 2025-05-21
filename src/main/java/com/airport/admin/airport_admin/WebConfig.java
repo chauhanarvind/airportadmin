@@ -16,7 +16,8 @@ public class WebConfig {
                 registry.addMapping("/**") //allow all endpoints
                         .allowedOrigins("http://localhost:3000") //base url of React
                         .allowedMethods("GET", "POST", "PUT", "DELETE") //allow all methods
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true);
             }
         };
     }

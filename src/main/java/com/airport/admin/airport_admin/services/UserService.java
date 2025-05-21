@@ -9,6 +9,8 @@ import com.airport.admin.airport_admin.repositories.JobLevelRepository;
 import com.airport.admin.airport_admin.repositories.JobRoleRepository;
 import com.airport.admin.airport_admin.repositories.UserRepository;
 import com.airport.admin.airport_admin.repositories.RoleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +22,8 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final JobLevelRepository jobLevelRepository;
     private final JobRoleRepository jobRoleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private UserService(UserRepository userRepository, RoleRepository roleRepository,
                         JobLevelRepository jobLevelRepository, JobRoleRepository jobRoleRepository){
@@ -52,7 +56,7 @@ public class UserService {
         user.setFirstName(userRequestDto.getFirstName());
         user.setLastName(userRequestDto.getLastName());
         user.setEmail(userRequestDto.getEmail());
-        user.setPassword(userRequestDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
         user.setRole(role);
         user.setJobLevel(jobLevel);
         user.setJobRole(jobRole);

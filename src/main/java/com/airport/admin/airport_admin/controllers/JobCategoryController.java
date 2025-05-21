@@ -5,16 +5,18 @@ import com.airport.admin.airport_admin.models.JobCategory;
 import com.airport.admin.airport_admin.services.JobCategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/job-categories")
+@PreAuthorize("hasRole('Admin')")
 public class JobCategoryController {
     private final JobCategoryService jobCategoryService;
 
-    private JobCategoryController(JobCategoryService jobCategoryService){
+    public JobCategoryController(JobCategoryService jobCategoryService){
         this.jobCategoryService = jobCategoryService;
     }
 

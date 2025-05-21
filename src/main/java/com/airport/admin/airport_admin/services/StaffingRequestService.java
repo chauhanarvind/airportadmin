@@ -22,7 +22,7 @@ public class StaffingRequestService {
 
     // 1. Save a new staffing request from DTO
     @Transactional
-    public StaffingRequest saveRequest(StaffingRequestsDto dto) {
+    public StaffingRequest submitRequest(StaffingRequestsDto dto) {
         StaffingRequest request = staffingRequestMapper.mapDtoToEntity(dto);
         return staffingRequestRepository.save(request);
     }
@@ -43,7 +43,7 @@ public class StaffingRequestService {
                 .orElseThrow(() -> new RuntimeException("Request not found with id: " + id));
     }
 
-    //  5. Update the status of a request (e.g. APPROVED/REJECTED)
+    //  5. Update the status of a request
     @Transactional
     public StaffingRequest updateStatus(Long requestId, LeaveStatus status) {
         StaffingRequest request = staffingRequestRepository.findById(requestId)

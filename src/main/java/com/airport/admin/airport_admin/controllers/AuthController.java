@@ -33,6 +33,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
+        System.out.println("email=="+ authRequest.getEmail());
+        System.out.println(("password=="+ authRequest.getPassword()));
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
         );
@@ -43,17 +45,17 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody UserRequestDto requestDto) {
-        // 1. Create new user
-        User createdUser = userService.createUser(requestDto);
-
-        // 2. Generate token for newly registered user
-        UserDetails userDetails = new CustomUserDetails(createdUser);
-        String token = jwtTokenProvider.generateToken(userDetails);
-
-        // 3. Return token
-        return ResponseEntity.ok(new AuthResponse(token));
-    }
+//    @PostMapping("/register")
+//    public ResponseEntity<AuthResponse> register(@RequestBody UserRequestDto requestDto) {
+//        // 1. Create new user
+//        User createdUser = userService.createUser(requestDto);
+//
+//        // 2. Generate token for newly registered user
+//        UserDetails userDetails = new CustomUserDetails(createdUser);
+//        String token = jwtTokenProvider.generateToken(userDetails);
+//
+//        // 3. Return token
+//        return ResponseEntity.ok(new AuthResponse(token));
+//    }
 
 }

@@ -7,16 +7,18 @@ import com.airport.admin.airport_admin.models.User;
 import com.airport.admin.airport_admin.services.JobRoleService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/job-roles")
+@PreAuthorize("hasRole('Admin')")
 public class JobRoleController {
     private final JobRoleService jobRoleService;
 
-    private JobRoleController(JobRoleService jobRoleService){
+    public JobRoleController(JobRoleService jobRoleService){
         this.jobRoleService = jobRoleService;
     }
 
