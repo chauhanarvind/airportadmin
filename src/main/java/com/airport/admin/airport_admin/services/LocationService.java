@@ -5,12 +5,18 @@ import com.airport.admin.airport_admin.models.Location;
 import com.airport.admin.airport_admin.repositories.LocationRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class LocationService {
     private final LocationRepository locationRepository;
 
     private LocationService(LocationRepository locationRepository){
         this.locationRepository = locationRepository;
+    }
+
+    public List<Location> getAllLocations(){
+        return locationRepository.findAll();
     }
 
     public Location createLocation(LocationDto locationDto){

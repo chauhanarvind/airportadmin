@@ -28,6 +28,11 @@ public class StaffingRequestMapper {
     private JobLevelRepository jobLevelRepository;
 
     public StaffingRequest mapDtoToEntity(StaffingRequestsDto dto) {
+        if (dto.getManagerId()==null){
+           throw new IllegalArgumentException("Manager id is null");
+        }else if(dto.getLocationId() == null){
+            throw new IllegalArgumentException("Location id is null");
+        }
         // Lookup manager and location
         User manager = userRepository.findById(dto.getManagerId())
                 .orElseThrow(() -> new RuntimeException("Manager not found"));
@@ -37,7 +42,7 @@ public class StaffingRequestMapper {
         StaffingRequest request = new StaffingRequest();
         request.setManager(manager);
         request.setLocation(location);
-        request.setRequestType(RequestType.valueOf(dto.getRequestType().toUpperCase()));
+        request.setRequestType(RequestType.valueOf(dto.getRequestType()));
         request.setReason(dto.getReason());
         request.setStatus(LeaveStatus.PENDING); // Default status
 
@@ -49,6 +54,11 @@ public class StaffingRequestMapper {
 
             List<StaffingRequestItem> itemEntities = new ArrayList<>();
             for (StaffingRequestItemDto itemDto : dayDto.getItems()) {
+                if(itemDto.getJobLevelId() == null){
+                    throw new IllegalArgumentException("Job level id is null");
+                }else if(itemDto.getJobRoleId() == null){
+                    throw new IllegalArgumentException("Job role is null");
+                }
                 StaffingRequestItem item = new StaffingRequestItem();
                 item.setDay(day);
                 item.setJobRole(jobRoleRepository.findById(itemDto.getJobRoleId())
@@ -68,4 +78,34 @@ public class StaffingRequestMapper {
         request.setDays(dayEntities);
         return request;
     }
+
+    public StaffingRequestsDto toDto(StaffingRequest request) {
+        StaffingRequestsDto dto = new StaffingRequestsDto();
+        dto.setManagerId(request.getManager().getId());
+        dto.setLocationId(request.getLocation().getId());
+        dto.setRequestType(request.getRequestType().name());
+        dto.setReason(request.getReason());
+
+        List<StaffingRequestDayDto> dayDtos = request.getDays().stream().map(day -> {
+            StaffingRequestDayDto dayDto = new StaffingRequestDayDto();
+            dayDto.setDate(day.getDate());
+
+            List<StaffingRequestItemDto> itemDtos = day.getItems().stream().map(item -> {
+                StaffingRequestItemDto itemDto = new StaffingRequestItemDto();
+                itemDto.setJobRoleId(item.getJobRole().getId());
+                itemDto.setJobLevelId(item.getJobLevel().getId());
+                itemDto.setRequiredCount(item.getRequiredCount());
+                itemDto.setStartTime(item.getStartTime());
+                itemDto.setEndTime(item.getEndTime());
+                return itemDto;
+            }).toList();
+
+            dayDto.setItems(itemDtos);
+            return dayDto;
+        }).toList();
+
+        dto.setDays(dayDtos);
+        return dto;
+    }
+
 }

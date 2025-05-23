@@ -7,9 +7,15 @@ import com.airport.admin.airport_admin.repositories.StaffingRequestRepository;
 import com.airport.admin.airport_admin.mappers.StaffingRequestMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StaffingRequestService {
@@ -27,15 +33,12 @@ public class StaffingRequestService {
         return staffingRequestRepository.save(request);
     }
 
-    // 2. Get all staffing requests (for admin)
-    public List<StaffingRequest> getAllRequests() {
-        return staffingRequestRepository.findAll();
+    // 2. Get paged requests
+    public Page<StaffingRequest> getRequestsPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return staffingRequestRepository.findAll(pageable);
     }
 
-    //  3. Get all requests submitted by a specific manager
-    public List<StaffingRequest> getRequestsByManager(Long managerId) {
-        return staffingRequestRepository.findByManagerId(managerId);
-    }
 
     //  4. Get a specific request by ID
     public StaffingRequest getRequestById(Long id) {
@@ -50,5 +53,21 @@ public class StaffingRequestService {
                 .orElseThrow(() -> new RuntimeException("Request not found with id: " + requestId));
         request.setStatus(status);
         return staffingRequestRepository.save(request);
+    }
+
+    // 6. get filtered requests
+    public Page<StaffingRequest> getFilteredRequests(
+            Optional<String> managerName,
+            Optional<Long> managerId,
+            Optional<Long> locationId,
+            Pageable pageable
+    ) {
+        Specification<StaffingRequest> spec = StaffingRequestSpecification.build(
+                managerName.orElse(null),
+                managerId.orElse(null),
+                locationId.orElse(null)
+        );
+
+        return staffingRequestRepository.findAll(spec, pageable);
     }
 }

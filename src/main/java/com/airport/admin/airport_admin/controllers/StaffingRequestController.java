@@ -2,9 +2,14 @@ package com.airport.admin.airport_admin.controllers;
 
 import com.airport.admin.airport_admin.dto.StaffingRequestsDto;
 import com.airport.admin.airport_admin.enums.LeaveStatus;
+import com.airport.admin.airport_admin.mappers.StaffingRequestMapper;
 import com.airport.admin.airport_admin.models.StaffingRequest;
 import com.airport.admin.airport_admin.services.StaffingRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import com.airport.admin.airport_admin.security.CustomUserDetails;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/staffing-requests")
@@ -19,7 +25,8 @@ public class StaffingRequestController {
 
     @Autowired
     private StaffingRequestService staffingRequestService;
-
+    @Autowired
+    private StaffingRequestMapper staffingRequestMapper;
     // 1. Submit a new staffing request
     @PostMapping("/submit")
     @PreAuthorize("!hasAnyRole('Crew')")
@@ -28,19 +35,6 @@ public class StaffingRequestController {
         return ResponseEntity.ok(request);
     }
 
-    // 2. Get all requests (admin only)
-    @GetMapping("/all")
-    @PreAuthorize("hasRole('Admin')")
-    public ResponseEntity<List<StaffingRequest>> getAllRequests() {
-        return ResponseEntity.ok(staffingRequestService.getAllRequests());
-    }
-
-//    // 3. Get requests by manager ID (e.g. manager dashboard)
-    @GetMapping("/my")
-    @PreAuthorize("!hasAnyRole('Crew')")
-    public ResponseEntity<List<StaffingRequest>> getMyRequests(@AuthenticationPrincipal CustomUserDetails user) {
-        return ResponseEntity.ok(staffingRequestService.getRequestsByManager(user.getId()));
-    }
     // 4. Get a specific request by ID
     @GetMapping("/{id}")
     @PreAuthorize("!hasAnyRole('Crew')")
@@ -49,10 +43,35 @@ public class StaffingRequestController {
     }
 
     // 5. Approve/reject a request (admin or supervisor only)
-    @PutMapping("/{id}/status")
+    @PutMapping("/{id}/status") //we will just be updating the status
     @PreAuthorize("hasAnyRole('Admin' , 'Supervisor')")
     public ResponseEntity<StaffingRequest> updateStatus(@PathVariable Long id,
                                                         @RequestParam LeaveStatus status) {
         return ResponseEntity.ok(staffingRequestService.updateStatus(id, status));
     }
+
+    // 6. get filtered requests
+    @GetMapping
+    public Page<StaffingRequestsDto> getRequests(
+            @RequestParam Optional<Integer> page,
+            @RequestParam Optional<Integer> size,
+            @RequestParam Optional<String> managerName,
+            @RequestParam Optional<Long> managerId,
+            @RequestParam Optional<Long> locationId
+    ) {
+        Pageable pageable = PageRequest.of(
+                page.orElse(0),
+                size.orElse(20),
+                Sort.by("createdAt").descending()
+        );
+
+        boolean hasFilters = managerName.isPresent() || managerId.isPresent() || locationId.isPresent();
+
+        Page<StaffingRequest> result = hasFilters
+                ? staffingRequestService.getFilteredRequests(managerName, managerId, locationId, pageable)
+                : staffingRequestService.getRequestsPaged(page.orElse(0), size.orElse(20));
+
+        return result.map(staffingRequestMapper::toDto);
+    }
+
 }

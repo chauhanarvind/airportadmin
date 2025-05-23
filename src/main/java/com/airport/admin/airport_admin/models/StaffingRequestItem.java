@@ -1,10 +1,13 @@
 package com.airport.admin.airport_admin.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "staffing_request_items")
@@ -19,6 +22,7 @@ public class StaffingRequestItem {
 
     @ManyToOne
     @JoinColumn(name = "day_id", nullable = false)
+    @JsonIgnore
     private StaffingRequestDay day;
 
     @ManyToOne
@@ -33,8 +37,8 @@ public class StaffingRequestItem {
     private Integer requiredCount;
 
     @Column(name = "start_time", nullable = false)
-    private String startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time", nullable = false)
-    private String endTime;
+    private LocalTime endTime;
 }

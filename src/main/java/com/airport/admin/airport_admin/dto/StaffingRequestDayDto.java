@@ -1,6 +1,7 @@
 package com.airport.admin.airport_admin.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +12,8 @@ import java.util.*;
 @Setter
 public class StaffingRequestDayDto {
 
-    @NotBlank(message = "Date is required")
-    private String date;
+    @NotNull(message = "Date is required")
+    private LocalDate date;
 
     @NotEmpty(message = "At least one item is required")
     private List<StaffingRequestItemDto> items;

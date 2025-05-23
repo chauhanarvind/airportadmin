@@ -43,6 +43,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claim("role", role)
+                .claim("userId", ((CustomUserDetails) userDetails).getId())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY))
                 .signWith(secretKey)

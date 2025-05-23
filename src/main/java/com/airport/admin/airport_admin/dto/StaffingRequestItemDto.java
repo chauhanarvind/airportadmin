@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalTime;
+
 @Getter
 @Setter
 public class StaffingRequestItemDto {
@@ -17,9 +19,9 @@ public class StaffingRequestItemDto {
     @NotNull(message = "Count is required")
     private Integer requiredCount;
 
-    @NotBlank(message = "Start time is required")
-    private String startTime; //"HH:MM" format
+    @NotNull(message = "Start time is required")
+    private LocalTime startTime; //"HH:MM" format
 
-    @NotBlank(message = "End time is required")
-    private String endTime; //"HH:MM" format
+    @NotNull(message = "End time is required")
+    private LocalTime endTime; //"HH:MM" format
 }

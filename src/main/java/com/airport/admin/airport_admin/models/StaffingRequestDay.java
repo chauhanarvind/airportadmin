@@ -1,6 +1,7 @@
 package com.airport.admin.airport_admin.models;
 
 import com.airport.admin.airport_admin.dto.StaffingRequestItemDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,9 +24,11 @@ public class StaffingRequestDay {
 
     @ManyToOne
     @JoinColumn(name = "request_id", nullable = false)
+    @JsonIgnore
     private StaffingRequest request;
 
-    private String Date;
+    @Column(nullable = false)
+    private LocalDate date;
 
     @OneToMany(mappedBy = "day", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StaffingRequestItem> items;
