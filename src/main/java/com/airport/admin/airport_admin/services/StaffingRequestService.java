@@ -1,7 +1,7 @@
 package com.airport.admin.airport_admin.services;
 
 import com.airport.admin.airport_admin.dto.StaffingRequestsDto;
-import com.airport.admin.airport_admin.enums.LeaveStatus;
+import com.airport.admin.airport_admin.enums.RosterStatus;
 import com.airport.admin.airport_admin.models.StaffingRequest;
 import com.airport.admin.airport_admin.repositories.StaffingRequestRepository;
 import com.airport.admin.airport_admin.mappers.StaffingRequestMapper;
@@ -48,7 +48,7 @@ public class StaffingRequestService {
 
     //  5. Update the status of a request
     @Transactional
-    public StaffingRequest updateStatus(Long requestId, LeaveStatus status) {
+    public StaffingRequest updateStatus(Long requestId, RosterStatus status) {
         StaffingRequest request = staffingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found with id: " + requestId));
         request.setStatus(status);
@@ -57,15 +57,15 @@ public class StaffingRequestService {
 
     // 6. get filtered requests
     public Page<StaffingRequest> getFilteredRequests(
-            Optional<String> managerName,
             Optional<Long> managerId,
             Optional<Long> locationId,
+            Optional<String> status,
             Pageable pageable
     ) {
         Specification<StaffingRequest> spec = StaffingRequestSpecification.build(
-                managerName.orElse(null),
                 managerId.orElse(null),
-                locationId.orElse(null)
+                locationId.orElse(null),
+                status.orElse(null)
         );
 
         return staffingRequestRepository.findAll(spec, pageable);

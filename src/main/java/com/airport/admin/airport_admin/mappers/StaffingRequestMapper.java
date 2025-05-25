@@ -1,8 +1,8 @@
 package com.airport.admin.airport_admin.mappers;
 
 import com.airport.admin.airport_admin.dto.*;
-import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.enums.RequestType;
+import com.airport.admin.airport_admin.enums.RosterStatus;
 import com.airport.admin.airport_admin.models.*;
 import com.airport.admin.airport_admin.repositories.*;
 
@@ -27,6 +27,7 @@ public class StaffingRequestMapper {
     @Autowired
     private JobLevelRepository jobLevelRepository;
 
+    //for submit requests
     public StaffingRequest mapDtoToEntity(StaffingRequestsDto dto) {
         if (dto.getManagerId()==null){
            throw new IllegalArgumentException("Manager id is null");
@@ -44,7 +45,7 @@ public class StaffingRequestMapper {
         request.setLocation(location);
         request.setRequestType(RequestType.valueOf(dto.getRequestType()));
         request.setReason(dto.getReason());
-        request.setStatus(LeaveStatus.PENDING); // Default status
+        request.setStatus(RosterStatus.PENDING); // Default status
 
         List<StaffingRequestDay> dayEntities = new ArrayList<>();
         for (StaffingRequestDayDto dayDto : dto.getDays()) {
@@ -79,32 +80,25 @@ public class StaffingRequestMapper {
         return request;
     }
 
-    public StaffingRequestsDto toDto(StaffingRequest request) {
-        StaffingRequestsDto dto = new StaffingRequestsDto();
+    //for get requests
+    public StaffingRequestsSummaryDto toSummaryDto(StaffingRequest request) {
+        StaffingRequestsSummaryDto dto = new StaffingRequestsSummaryDto();
+        dto.setId(request.getId());
         dto.setManagerId(request.getManager().getId());
+        dto.setManagerFirstName(request.getManager().getFirstName());
+        dto.setManagerLastName(request.getManager().getLastName());
+
         dto.setLocationId(request.getLocation().getId());
-        dto.setRequestType(request.getRequestType().name());
+        dto.setLocationName(request.getLocation().getLocationName());
+
+        dto.setRequestType(request.getRequestType());
+
         dto.setReason(request.getReason());
 
-        List<StaffingRequestDayDto> dayDtos = request.getDays().stream().map(day -> {
-            StaffingRequestDayDto dayDto = new StaffingRequestDayDto();
-            dayDto.setDate(day.getDate());
+        dto.setCreatedAt(request.getCreatedAt());
 
-            List<StaffingRequestItemDto> itemDtos = day.getItems().stream().map(item -> {
-                StaffingRequestItemDto itemDto = new StaffingRequestItemDto();
-                itemDto.setJobRoleId(item.getJobRole().getId());
-                itemDto.setJobLevelId(item.getJobLevel().getId());
-                itemDto.setRequiredCount(item.getRequiredCount());
-                itemDto.setStartTime(item.getStartTime());
-                itemDto.setEndTime(item.getEndTime());
-                return itemDto;
-            }).toList();
+        dto.setStatus(request.getStatus());
 
-            dayDto.setItems(itemDtos);
-            return dayDto;
-        }).toList();
-
-        dto.setDays(dayDtos);
         return dto;
     }
 

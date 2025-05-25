@@ -1,6 +1,6 @@
 package com.airport.admin.airport_admin.models;
-import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.enums.RequestType;
+import com.airport.admin.airport_admin.enums.RosterStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Entity
@@ -32,17 +32,17 @@ public class StaffingRequest {
 
     @Column(name = "request_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private RequestType requestType = RequestType.Regular;
+    private RequestType requestType = RequestType.REGULAR;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private LeaveStatus status = LeaveStatus.PENDING;
+    private RosterStatus status  = RosterStatus.PENDING;
 
     private String reason;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
 
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)

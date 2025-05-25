@@ -1,7 +1,8 @@
 package com.airport.admin.airport_admin.controllers;
 
 import com.airport.admin.airport_admin.dto.StaffingRequestsDto;
-import com.airport.admin.airport_admin.enums.LeaveStatus;
+import com.airport.admin.airport_admin.dto.StaffingRequestsSummaryDto;
+import com.airport.admin.airport_admin.enums.RosterStatus;
 import com.airport.admin.airport_admin.mappers.StaffingRequestMapper;
 import com.airport.admin.airport_admin.models.StaffingRequest;
 import com.airport.admin.airport_admin.services.StaffingRequestService;
@@ -46,18 +47,19 @@ public class StaffingRequestController {
     @PutMapping("/{id}/status") //we will just be updating the status
     @PreAuthorize("hasAnyRole('Admin' , 'Supervisor')")
     public ResponseEntity<StaffingRequest> updateStatus(@PathVariable Long id,
-                                                        @RequestParam LeaveStatus status) {
+                                                        @RequestParam RosterStatus status) {
         return ResponseEntity.ok(staffingRequestService.updateStatus(id, status));
     }
 
     // 6. get filtered requests
-    @GetMapping
-    public Page<StaffingRequestsDto> getRequests(
+    @PreAuthorize("!hasAnyRole('Crew')")
+    @GetMapping("/")
+    public Page<StaffingRequestsSummaryDto> getRequestsFiltered(
             @RequestParam Optional<Integer> page,
             @RequestParam Optional<Integer> size,
-            @RequestParam Optional<String> managerName,
             @RequestParam Optional<Long> managerId,
-            @RequestParam Optional<Long> locationId
+            @RequestParam Optional<Long> locationId,
+            @RequestParam Optional<String> status
     ) {
         Pageable pageable = PageRequest.of(
                 page.orElse(0),
@@ -65,13 +67,13 @@ public class StaffingRequestController {
                 Sort.by("createdAt").descending()
         );
 
-        boolean hasFilters = managerName.isPresent() || managerId.isPresent() || locationId.isPresent();
+        boolean hasFilters =  managerId.isPresent() || locationId.isPresent() || status.isPresent();
 
         Page<StaffingRequest> result = hasFilters
-                ? staffingRequestService.getFilteredRequests(managerName, managerId, locationId, pageable)
+                ? staffingRequestService.getFilteredRequests( managerId, locationId,status, pageable)
                 : staffingRequestService.getRequestsPaged(page.orElse(0), size.orElse(20));
 
-        return result.map(staffingRequestMapper::toDto);
+        return result.map(staffingRequestMapper::toSummaryDto);
     }
 
 }
