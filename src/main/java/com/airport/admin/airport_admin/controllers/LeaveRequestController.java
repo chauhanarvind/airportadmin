@@ -1,72 +1,93 @@
 package com.airport.admin.airport_admin.controllers;
 
-
 import com.airport.admin.airport_admin.dto.LeaveRequestDto;
 import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.models.LeaveRequest;
-import com.airport.admin.airport_admin.security.CustomUserDetails;
 import com.airport.admin.airport_admin.services.LeaveRequestService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/leaves")
+@RequestMapping("/api/leaves")
 public class LeaveRequestController {
 
-    @Autowired
-    private LeaveRequestService leaveService;
+    private final LeaveRequestService leaveService;
 
-    // ✅ User applies for leave
-    @PostMapping("/apply")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<LeaveRequest> applyLeave(@RequestBody LeaveRequestDto dto,
-                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
-        LeaveRequest leave = leaveService.applyLeave(userDetails.getId(), dto);
+    public LeaveRequestController(LeaveRequestService leaveService) {
+        this.leaveService = leaveService;
+    }
+
+    // Submit a new leave request
+    @PostMapping("/submit/{userId}")
+    public ResponseEntity<LeaveRequestDto> applyLeave(
+            @PathVariable Long userId,
+            @RequestBody LeaveRequestDto dto
+    ) {
+        LeaveRequestDto leave = leaveService.applyLeave(userId, dto);
         return ResponseEntity.ok(leave);
     }
 
-    // ✅ User views their own leave requests
-    @GetMapping("/my")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<LeaveRequest>> getMyLeaves(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<LeaveRequest> leaves = leaveService.getLeavesByUser(userDetails.getId());
-        return ResponseEntity.ok(leaves);
+    // Get leaves for a user
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<LeaveRequestDto>> getUserLeaves(@PathVariable Long userId) {
+        return ResponseEntity.ok(leaveService.getLeavesByUser(userId));
     }
 
-    // ✅ Admin views all leave requests
+    // Admin: Get all leaves (paginated & sorted)
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<LeaveRequest>> getAllLeaves() {
-        return ResponseEntity.ok(leaveService.getAllLeaves());
+    public ResponseEntity<Page<LeaveRequestDto>> getAllLeavesPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(leaveService.getAllLeavesPaged(pageable));
     }
 
-    // ✅ Admin approves or rejects a leave
-    @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<LeaveRequest> updateLeaveStatus(@PathVariable Long id,
-                                                          @RequestParam LeaveStatus status) {
-        return ResponseEntity.ok(leaveService.updateLeaveStatus(id, status));
+    // Admin: Filtered search (by userId and/or status)
+    @GetMapping("/search")
+    public ResponseEntity<Page<LeaveRequestDto>> getFilteredLeaves(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) LeaveStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(leaveService.getFilteredLeaves(userId, status, pageable));
     }
 
-    // ✅ User cancels a leave
-    @PutMapping("/{id}/cancel")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<LeaveRequest> cancelLeave(@PathVariable Long id,
-                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(leaveService.cancelLeave(id, userDetails.getId()));
+    // Admin: Approve/Reject leave
+    @PutMapping("/{leaveId}/status")
+    public ResponseEntity<LeaveRequestDto> updateStatus(
+            @PathVariable Long leaveId,
+            @RequestParam LeaveStatus status
+    ) {
+        return ResponseEntity.ok(leaveService.updateLeaveStatus(leaveId, status));
     }
 
-    // ✅ User resubmits a previously rejected/cancelled leave
-    @PutMapping("/{id}/resubmit")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<LeaveRequest> resubmitLeave(@PathVariable Long id,
-                                                      @RequestBody LeaveRequestDto dto,
-                                                      @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(leaveService.resubmitLeave(id, dto, userDetails.getId()));
+    //  User: Cancel leave
+    @PutMapping("/{leaveId}/cancel/{userId}")
+    public ResponseEntity<LeaveRequestDto> cancelLeave(
+            @PathVariable Long leaveId,
+            @PathVariable Long userId
+    ) {
+        return ResponseEntity.ok(leaveService.cancelLeave(leaveId, userId));
+    }
+
+    // User: Resubmit rejected/cancelled leave
+    @PutMapping("/{leaveId}/resubmit/{userId}")
+    public ResponseEntity<LeaveRequestDto> resubmitLeave(
+            @PathVariable Long leaveId,
+            @PathVariable Long userId,
+            @RequestBody LeaveRequestDto dto
+    ) {
+        return ResponseEntity.ok(leaveService.resubmitLeave(leaveId, dto, userId));
     }
 }
