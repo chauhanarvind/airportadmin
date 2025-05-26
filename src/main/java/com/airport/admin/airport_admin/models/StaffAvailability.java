@@ -9,10 +9,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "staff_availability")
 @Getter
 @Setter
 @NoArgsConstructor
+@Table(
+        name = "staff_availability",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "date"})
+)
 public class StaffAvailability {
 
     @Id
@@ -31,5 +34,5 @@ public class StaffAvailability {
     private LocalTime unavailableTo;
 
     @Column(name = "is_available", nullable = false)
-    private Boolean isAvailable;
+    private boolean isAvailable;
 }

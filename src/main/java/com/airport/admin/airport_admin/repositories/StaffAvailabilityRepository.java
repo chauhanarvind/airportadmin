@@ -5,8 +5,9 @@ import com.airport.admin.airport_admin.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
-import java.util.List;
+
+import java.util.Optional;
 
 public interface StaffAvailabilityRepository extends JpaRepository<StaffAvailability, Long> {
-    List<StaffAvailability> findByUserAndDate(User user, LocalDate date);
+    Optional<StaffAvailability> findByUserAndDate(User user, LocalDate date);
 }

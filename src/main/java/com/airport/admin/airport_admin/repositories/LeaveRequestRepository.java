@@ -3,10 +3,12 @@ import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.models.LeaveRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import com.airport.admin.airport_admin.models.User;
 
+import java.time.LocalDate;
 import java.util.List;
 
-public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> ,
+public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long>,
         JpaSpecificationExecutor<LeaveRequest> {
 
     // Get all leaves by user ID
@@ -15,6 +17,14 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
     // Get leaves by status
     List<LeaveRequest> findByStatus(LeaveStatus status);
 
+    // Get leaves by user and status
     List<LeaveRequest> findByUserIdAndStatus(Long userId, LeaveStatus status);
 
+    // Check if user is on leave during a given date
+    boolean existsByUserAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            User user,
+            LeaveStatus status,
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }
