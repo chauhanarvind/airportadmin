@@ -1,5 +1,6 @@
 package com.airport.admin.airport_admin.dto;
 
+import com.airport.admin.airport_admin.enums.RequestType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +20,7 @@ public class StaffingRequestsDto {
     private Long locationId;
 
     @NotBlank(message = "Request type is required")
-    private String requestType;
+    private RequestType requestType;
 
     private String reason;
 

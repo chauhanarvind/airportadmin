@@ -9,11 +9,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "roster_assignments")
+@Table(name = "staff_availability")
 @Getter
 @Setter
 @NoArgsConstructor
-public class RosterAssignment {
+public class StaffAvailability {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,17 +26,10 @@ public class RosterAssignment {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(name = "start_time", nullable = false)
-    private LocalTime startTime;
+    private LocalTime unavailableFrom;
 
-    @Column(name = "end_time", nullable = false)
-    private LocalTime endTime;
+    private LocalTime unavailableTo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_role_id", nullable = false)
-    private JobRole role;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id", nullable = false)
-    private Location location;
+    @Column(name = "is_available", nullable = false)
+    private Boolean isAvailable;
 }

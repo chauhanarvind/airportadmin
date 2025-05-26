@@ -43,7 +43,7 @@ public class StaffingRequestMapper {
         StaffingRequest request = new StaffingRequest();
         request.setManager(manager);
         request.setLocation(location);
-        request.setRequestType(RequestType.valueOf(dto.getRequestType()));
+        request.setRequestType(dto.getRequestType());
         request.setReason(dto.getReason());
         request.setStatus(RosterStatus.PENDING); // Default status
 
@@ -101,5 +101,45 @@ public class StaffingRequestMapper {
 
         return dto;
     }
+
+    //for /id get request
+    public StaffingRequestDetailDto toDetailDto(StaffingRequest request) {
+        StaffingRequestDetailDto dto = new StaffingRequestDetailDto();
+        dto.setId(request.getId());
+        dto.setManagerId(request.getManager().getId());
+        dto.setManagerFirstName(request.getManager().getFirstName());
+        dto.setManagerLastName(request.getManager().getLastName());
+        dto.setLocationId(request.getLocation().getId());
+        dto.setLocationName(request.getLocation().getLocationName());
+        dto.setReason(request.getReason());
+        dto.setRequestType(request.getRequestType());
+        dto.setStatus(request.getStatus());
+        dto.setCreatedAt(request.getCreatedAt());
+
+        List<StaffingRequestDayDetailDto> dayDtos = request.getDays().stream().map(day -> {
+            StaffingRequestDayDetailDto dayDto = new StaffingRequestDayDetailDto();
+            dayDto.setId(day.getId());
+            dayDto.setDate(day.getDate());
+
+            List<StaffingRequestItemDetailDto> itemDtos = day.getItems().stream().map(item -> {
+                StaffingRequestItemDetailDto itemDto = new StaffingRequestItemDetailDto();
+                itemDto.setId(item.getId());
+                itemDto.setJobRoleName(item.getJobRole().getRoleName());
+                itemDto.setJobLevelName(item.getJobLevel().getLevelName());
+                itemDto.setRequiredCount(item.getRequiredCount());
+                itemDto.setStartTime(item.getStartTime());
+                itemDto.setEndTime(item.getEndTime());
+                return itemDto;
+            }).toList();
+
+            dayDto.setItems(itemDtos);
+            return dayDto;
+        }).toList();
+
+        dto.setDays(dayDtos);
+        return dto;
+    }
+
+
 
 }

@@ -1,14 +1,8 @@
 package com.airport.admin.airport_admin.services;
 
 import com.airport.admin.airport_admin.dto.UserRequestDto;
-import com.airport.admin.airport_admin.models.JobLevel;
-import com.airport.admin.airport_admin.models.JobRole;
-import com.airport.admin.airport_admin.models.Role;
-import com.airport.admin.airport_admin.models.User;
-import com.airport.admin.airport_admin.repositories.JobLevelRepository;
-import com.airport.admin.airport_admin.repositories.JobRoleRepository;
-import com.airport.admin.airport_admin.repositories.UserRepository;
-import com.airport.admin.airport_admin.repositories.RoleRepository;
+import com.airport.admin.airport_admin.models.*;
+import com.airport.admin.airport_admin.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,13 +18,17 @@ public class UserService {
     private final JobRoleRepository jobRoleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    private final ConstraintProfileRepository constraintProfileRepository;
+
 
     private UserService(UserRepository userRepository, RoleRepository roleRepository,
-                        JobLevelRepository jobLevelRepository, JobRoleRepository jobRoleRepository){
+                        JobLevelRepository jobLevelRepository, JobRoleRepository jobRoleRepository,
+                        ConstraintProfileRepository constraintProfileRepository){
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.jobLevelRepository = jobLevelRepository;
         this.jobRoleRepository = jobRoleRepository;
+        this.constraintProfileRepository = constraintProfileRepository;
     }
 
     public User createUser(UserRequestDto userRequestDto){
@@ -61,7 +59,16 @@ public class UserService {
         user.setJobLevel(jobLevel);
         user.setJobRole(jobRole);
 
-    return userRepository.save(user);
+        if (userRequestDto.getConstraintProfileId() != null) {
+            ConstraintProfile profile = constraintProfileRepository.findById(userRequestDto.getConstraintProfileId())
+                    .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
+            user.setConstraintProfile(profile);
+        } else {
+            user.setConstraintProfile(null); // in case of removal
+        }
+
+
+        return userRepository.save(user);
     }
 
     public User updateUser(UserRequestDto userRequestDto){
@@ -81,6 +88,15 @@ public class UserService {
         user.setRole(role);
         user.setJobLevel(jobLevel);
         user.setJobRole(jobRole);
+
+        if (userRequestDto.getConstraintProfileId() != null) {
+            ConstraintProfile profile = constraintProfileRepository.findById(userRequestDto.getConstraintProfileId())
+                    .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
+            user.setConstraintProfile(profile);
+        } else {
+            user.setConstraintProfile(null); // in case of removal
+        }
+
 
         return userRepository.save(user);
 

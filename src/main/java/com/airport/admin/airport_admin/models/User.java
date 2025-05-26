@@ -2,9 +2,11 @@ package com.airport.admin.airport_admin.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name="users")
@@ -39,6 +41,11 @@ public class User {
     @JoinColumn(name = "job_role_id", nullable = false)
     private JobRole jobRole;
 
-    @Column(name="created_at", updatable = false, insertable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private OffsetDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "constraint_profile_id")
+    private ConstraintProfile constraintProfile;
 }

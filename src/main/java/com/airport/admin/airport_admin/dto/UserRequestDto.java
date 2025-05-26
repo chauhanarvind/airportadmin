@@ -36,4 +36,6 @@ public class UserRequestDto {
 
     @NotNull(message = "Job Level id cannot be null")
     private Long jobLevelId;
+
+    private Long constraintProfileId;
 }

@@ -1,5 +1,6 @@
 package com.airport.admin.airport_admin.controllers;
 
+import com.airport.admin.airport_admin.dto.StaffingRequestDetailDto;
 import com.airport.admin.airport_admin.dto.StaffingRequestsDto;
 import com.airport.admin.airport_admin.dto.StaffingRequestsSummaryDto;
 import com.airport.admin.airport_admin.enums.RosterStatus;
@@ -39,16 +40,20 @@ public class StaffingRequestController {
     // 4. Get a specific request by ID
     @GetMapping("/{id}")
     @PreAuthorize("!hasAnyRole('Crew')")
-    public ResponseEntity<StaffingRequest> getById(@PathVariable Long id) {
+    public ResponseEntity<StaffingRequestDetailDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(staffingRequestService.getRequestById(id));
     }
 
     // 5. Approve/reject a request (admin or supervisor only)
     @PutMapping("/{id}/status") //we will just be updating the status
     @PreAuthorize("hasAnyRole('Admin' , 'Supervisor')")
-    public ResponseEntity<StaffingRequest> updateStatus(@PathVariable Long id,
+    public ResponseEntity<RosterStatus> updateStatus(@PathVariable Long id,
                                                         @RequestParam RosterStatus status) {
-        return ResponseEntity.ok(staffingRequestService.updateStatus(id, status));
+
+        //need to add check here for update only if the status is pending else throw error
+
+        staffingRequestService.updateStatus(id,status);
+        return ResponseEntity.ok(status);
     }
 
     // 6. get filtered requests
