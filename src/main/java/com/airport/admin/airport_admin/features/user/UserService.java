@@ -8,6 +8,9 @@ import com.airport.admin.airport_admin.features.jobRole.JobRole;
 import com.airport.admin.airport_admin.features.jobRole.JobRoleRepository;
 import com.airport.admin.airport_admin.features.roles.Role;
 import com.airport.admin.airport_admin.features.roles.RoleRepository;
+import com.airport.admin.airport_admin.features.user.dto.CreateUserDto;
+import com.airport.admin.airport_admin.features.user.dto.UpdateUserDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,124 +19,93 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final JobLevelRepository jobLevelRepository;
     private final JobRoleRepository jobRoleRepository;
+    private final ConstraintProfileRepository constraintProfileRepository;
+    private final UserMapper userMapper;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    private final ConstraintProfileRepository constraintProfileRepository;
 
-
-    private UserService(UserRepository userRepository, RoleRepository roleRepository,
-                        JobLevelRepository jobLevelRepository, JobRoleRepository jobRoleRepository,
-                        ConstraintProfileRepository constraintProfileRepository){
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.jobLevelRepository = jobLevelRepository;
-        this.jobRoleRepository = jobRoleRepository;
-        this.constraintProfileRepository = constraintProfileRepository;
-    }
-
-    public User createUser(UserRequestDto userRequestDto){
-        System.out.println("user request dto =>>>" + userRequestDto);
-
-        if(userRepository.findByEmail(userRequestDto.getEmail()).isPresent()){
+    public User createUser(CreateUserDto dto) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-        Role role = resolveRole(userRequestDto.getRoleId());
-        JobLevel jobLevel = resolveJobLevel(userRequestDto.getJobLevelId());
-        JobRole jobRole = resolveJobRole(userRequestDto.getJobRoleId());
+        Role role = resolveRole(dto.getRoleId());
+        JobLevel jobLevel = resolveJobLevel(dto.getJobLevelId());
+        JobRole jobRole = resolveJobRole(dto.getJobRoleId());
+        ConstraintProfile profile = resolveConstraintProfile(dto.getConstraintProfileId());
 
-        String rawPassword = userRequestDto.getPassword();
-        if(rawPassword == null || rawPassword.isBlank()){
-            throw new RuntimeException("Password is required for new users");
-        }
-        if(rawPassword.length() < 6){
-            throw  new RuntimeException("Password must be at least 6 characters");
-        }
-        User user = new User();
-
-        user.setFirstName(userRequestDto.getFirstName());
-        user.setLastName(userRequestDto.getLastName());
-        user.setEmail(userRequestDto.getEmail());
-        user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
-        user.setRole(role);
-        user.setJobLevel(jobLevel);
-        user.setJobRole(jobRole);
-
-        if (userRequestDto.getConstraintProfileId() != null) {
-            ConstraintProfile profile = constraintProfileRepository.findById(userRequestDto.getConstraintProfileId())
-                    .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
-            user.setConstraintProfile(profile);
-        } else {
-            user.setConstraintProfile(null); // in case of removal
-        }
-
+        User user = userMapper.toEntity(dto, role, jobRole, jobLevel, profile);
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         return userRepository.save(user);
     }
 
-    public User updateUser(UserRequestDto userRequestDto){
-
-
-        User user = userRepository.findById(userRequestDto.getId())
+    public User updateUser(UpdateUserDto dto) {
+        User user = userRepository.findById(dto.getId())
                 .orElseThrow(() -> new RuntimeException("User does not exist"));
 
+        Role role = resolveRole(dto.getRoleId());
+        JobLevel jobLevel = resolveJobLevel(dto.getJobLevelId());
+        JobRole jobRole = resolveJobRole(dto.getJobRoleId());
+        ConstraintProfile profile = resolveConstraintProfile(dto.getConstraintProfileId());
 
-        Role role = resolveRole(userRequestDto.getRoleId());
-        JobRole jobRole= resolveJobRole(userRequestDto.getJobRoleId());
-        JobLevel jobLevel = resolveJobLevel(userRequestDto.getJobLevelId());
-
-        user.setFirstName(userRequestDto.getFirstName());
-        user.setLastName(userRequestDto.getLastName());
-        user.setEmail(userRequestDto.getEmail());
-        user.setRole(role);
-        user.setJobLevel(jobLevel);
-        user.setJobRole(jobRole);
-
-        if (userRequestDto.getConstraintProfileId() != null) {
-            ConstraintProfile profile = constraintProfileRepository.findById(userRequestDto.getConstraintProfileId())
-                    .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
-            user.setConstraintProfile(profile);
-        } else {
-            user.setConstraintProfile(null); // in case of removal
-        }
-
+        // No password update here since it's not part of the DTO
+        userMapper.updateEntity(user, dto, role, jobRole, jobLevel, profile);
 
         return userRepository.save(user);
-
     }
 
-    public void deleteUser(Long id){
-        if(!userRepository.existsById(id)){
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
             throw new RuntimeException("User does not exist");
         }
         userRepository.deleteById(id);
     }
 
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public Optional<User> findUserByEmail(String email){
+    public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    private Role resolveRole(Long roleId){
+    // --- Helper Methods ---
+
+    private Role resolveRole(Long roleId) {
         return roleRepository.findById(roleId)
-                .orElseThrow(()-> new RuntimeException("User role not found"));
+                .orElseThrow(() -> new RuntimeException("User role not found"));
     }
 
-    private JobRole resolveJobRole(Long jobRoleId){
+    private JobRole resolveJobRole(Long jobRoleId) {
         return jobRoleRepository.findById(jobRoleId)
-                .orElseThrow(()-> new RuntimeException("Job role does not exists"));
+                .orElseThrow(() -> new RuntimeException("Job role does not exist"));
     }
 
-    private JobLevel resolveJobLevel(Long jobLevelId){
+    private JobLevel resolveJobLevel(Long jobLevelId) {
         return jobLevelRepository.findById(jobLevelId)
-                .orElseThrow(()-> new RuntimeException("Job Level Not Found"));
+                .orElseThrow(() -> new RuntimeException("Job level not found"));
     }
+
+    private ConstraintProfile resolveConstraintProfile(Long profileId) {
+        if (profileId == null) return null;
+        return constraintProfileRepository.findById(profileId)
+                .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
+    }
+
+    public User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+    }
+
+
 }

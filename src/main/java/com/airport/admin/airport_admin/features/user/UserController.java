@@ -1,54 +1,71 @@
 package com.airport.admin.airport_admin.features.user;
 
+import com.airport.admin.airport_admin.features.user.dto.CreateUserDto;
+import com.airport.admin.airport_admin.features.user.dto.UpdateUserDto;
+import com.airport.admin.airport_admin.features.user.dto.UserResponseDto;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
 
-    public UserController(UserService userService){
-        this.userService = userService;
-    }
+    private final UserService userService;
+    private final UserMapper userMapper;
 
     @PreAuthorize("hasRole('Admin')")
     @PostMapping("/create")
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserRequestDto userRequestDto) {
-        User createdUser = userService.createUser(userRequestDto);
-        return ResponseEntity.ok(createdUser);
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserDto dto) {
+        var user = userService.createUser(dto);
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 
     @PreAuthorize("hasRole('Admin')")
-    @PostMapping("/{id}")
-        public ResponseEntity<?> updateUser(@Valid @RequestBody UserRequestDto userRequestDto){
-            User updateUser = userService.updateUser(userRequestDto);
-            return ResponseEntity.ok(updateUser);
-        }
-
-    @PreAuthorize("hasAnyRole('Admin' ,'Supervisor' ,'Manager')")
-    @GetMapping("/")
-    public ResponseEntity<List<User>> getAllUsers(){
-        return  ResponseEntity.ok(userService.getAllUsers());
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto dto) {
+        dto.setId(id); // Ensure ID from path is set
+        var updatedUser = userService.updateUser(dto);
+        return ResponseEntity.ok(userMapper.toDto(updatedUser));
     }
 
+    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
+    @GetMapping("/")
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        var users = userService.getAllUsers()
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
 
     @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
-    @GetMapping("/{email}")
-    public ResponseEntity<?> getUserByEmail(@PathVariable String email){
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserResponseDto> getUserByEmail(@PathVariable String email) {
         return userService.findUserByEmail(email)
+                .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
-                .orElseGet(()-> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('Admin')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id){
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return  ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
+        User user = userService.findUserById(id);
+        return ResponseEntity.ok(userMapper.toDto(user));
+    }
+
 }
