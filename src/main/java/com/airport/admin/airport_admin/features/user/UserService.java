@@ -1,0 +1,139 @@
+package com.airport.admin.airport_admin.features.user;
+
+import com.airport.admin.airport_admin.features.constraintProfile.ConstraintProfile;
+import com.airport.admin.airport_admin.features.constraintProfile.ConstraintProfileRepository;
+import com.airport.admin.airport_admin.features.jobLevel.JobLevel;
+import com.airport.admin.airport_admin.features.jobLevel.JobLevelRepository;
+import com.airport.admin.airport_admin.features.jobRole.JobRole;
+import com.airport.admin.airport_admin.features.jobRole.JobRoleRepository;
+import com.airport.admin.airport_admin.features.roles.Role;
+import com.airport.admin.airport_admin.features.roles.RoleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class UserService {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final JobLevelRepository jobLevelRepository;
+    private final JobRoleRepository jobRoleRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    private final ConstraintProfileRepository constraintProfileRepository;
+
+
+    private UserService(UserRepository userRepository, RoleRepository roleRepository,
+                        JobLevelRepository jobLevelRepository, JobRoleRepository jobRoleRepository,
+                        ConstraintProfileRepository constraintProfileRepository){
+        this.roleRepository = roleRepository;
+        this.userRepository = userRepository;
+        this.jobLevelRepository = jobLevelRepository;
+        this.jobRoleRepository = jobRoleRepository;
+        this.constraintProfileRepository = constraintProfileRepository;
+    }
+
+    public User createUser(UserRequestDto userRequestDto){
+        System.out.println("user request dto =>>>" + userRequestDto);
+
+        if(userRepository.findByEmail(userRequestDto.getEmail()).isPresent()){
+            throw new RuntimeException("Email already exists");
+        }
+
+        Role role = resolveRole(userRequestDto.getRoleId());
+        JobLevel jobLevel = resolveJobLevel(userRequestDto.getJobLevelId());
+        JobRole jobRole = resolveJobRole(userRequestDto.getJobRoleId());
+
+        String rawPassword = userRequestDto.getPassword();
+        if(rawPassword == null || rawPassword.isBlank()){
+            throw new RuntimeException("Password is required for new users");
+        }
+        if(rawPassword.length() < 6){
+            throw  new RuntimeException("Password must be at least 6 characters");
+        }
+        User user = new User();
+
+        user.setFirstName(userRequestDto.getFirstName());
+        user.setLastName(userRequestDto.getLastName());
+        user.setEmail(userRequestDto.getEmail());
+        user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+        user.setRole(role);
+        user.setJobLevel(jobLevel);
+        user.setJobRole(jobRole);
+
+        if (userRequestDto.getConstraintProfileId() != null) {
+            ConstraintProfile profile = constraintProfileRepository.findById(userRequestDto.getConstraintProfileId())
+                    .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
+            user.setConstraintProfile(profile);
+        } else {
+            user.setConstraintProfile(null); // in case of removal
+        }
+
+
+        return userRepository.save(user);
+    }
+
+    public User updateUser(UserRequestDto userRequestDto){
+
+
+        User user = userRepository.findById(userRequestDto.getId())
+                .orElseThrow(() -> new RuntimeException("User does not exist"));
+
+
+        Role role = resolveRole(userRequestDto.getRoleId());
+        JobRole jobRole= resolveJobRole(userRequestDto.getJobRoleId());
+        JobLevel jobLevel = resolveJobLevel(userRequestDto.getJobLevelId());
+
+        user.setFirstName(userRequestDto.getFirstName());
+        user.setLastName(userRequestDto.getLastName());
+        user.setEmail(userRequestDto.getEmail());
+        user.setRole(role);
+        user.setJobLevel(jobLevel);
+        user.setJobRole(jobRole);
+
+        if (userRequestDto.getConstraintProfileId() != null) {
+            ConstraintProfile profile = constraintProfileRepository.findById(userRequestDto.getConstraintProfileId())
+                    .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
+            user.setConstraintProfile(profile);
+        } else {
+            user.setConstraintProfile(null); // in case of removal
+        }
+
+
+        return userRepository.save(user);
+
+    }
+
+    public void deleteUser(Long id){
+        if(!userRepository.existsById(id)){
+            throw new RuntimeException("User does not exist");
+        }
+        userRepository.deleteById(id);
+    }
+
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
+    }
+
+    public Optional<User> findUserByEmail(String email){
+        return userRepository.findByEmail(email);
+    }
+
+    private Role resolveRole(Long roleId){
+        return roleRepository.findById(roleId)
+                .orElseThrow(()-> new RuntimeException("User role not found"));
+    }
+
+    private JobRole resolveJobRole(Long jobRoleId){
+        return jobRoleRepository.findById(jobRoleId)
+                .orElseThrow(()-> new RuntimeException("Job role does not exists"));
+    }
+
+    private JobLevel resolveJobLevel(Long jobLevelId){
+        return jobLevelRepository.findById(jobLevelId)
+                .orElseThrow(()-> new RuntimeException("Job Level Not Found"));
+    }
+}

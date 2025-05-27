@@ -1,0 +1,46 @@
+package com.airport.admin.airport_admin.features.jobCategory;
+
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class JobCategoryService {
+    private final JobCategoryRepository jobCategoryRepository;
+
+    private JobCategoryService(JobCategoryRepository jobCategoryRepository){
+        this.jobCategoryRepository = jobCategoryRepository;
+    }
+
+    public List<JobCategory> getAllJobCategory(){
+        return jobCategoryRepository.findAll();
+    }
+
+    public JobCategory createJobCategory(JobCategoryDto jobCategoryDto){
+        if(jobCategoryRepository.findByCategoryName(jobCategoryDto.getCategoryName()).isPresent()){
+            throw new RuntimeException("Job Category with this name already exists");
+        }
+
+        JobCategory jobCategory = new JobCategory();
+        jobCategory.setCategoryName(jobCategoryDto.getCategoryName());
+        return jobCategoryRepository.save(jobCategory);
+    }
+
+    public JobCategory updateJobCategory(JobCategoryDto jobCategoryDto){
+        JobCategory jobCategory = jobCategoryRepository.findById(jobCategoryDto.getId())
+                .orElseThrow(()-> new RuntimeException("Job category does not exist"));
+
+        jobCategory.setCategoryName(jobCategoryDto.getCategoryName());
+
+        return jobCategoryRepository.save(jobCategory);
+    }
+
+    public void deleteJobCategory(Long id){
+        JobCategory jobCategory = jobCategoryRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Job category does not exist"));
+
+        jobCategoryRepository.delete(jobCategory);
+    }
+
+
+}

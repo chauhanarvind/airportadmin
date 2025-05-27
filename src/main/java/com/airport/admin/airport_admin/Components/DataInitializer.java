@@ -1,9 +1,9 @@
 //package com.airport.admin.airport_admin.Components;
 //
-//import com.airport.admin.airport_admin.models.Role;
-//import com.airport.admin.airport_admin.models.User;
-//import com.airport.admin.airport_admin.repositories.RoleRepository;
-//import com.airport.admin.airport_admin.repositories.UserRepository;
+//import com.airport.admin.airport_admin.features.roles.Role;
+//import com.airport.admin.airport_admin.features.user.User;
+//import com.airport.admin.airport_admin.features.roles.RoleRepository;
+//import com.airport.admin.airport_admin.features.user.UserRepository;
 //import org.springframework.boot.CommandLineRunner;
 //import org.springframework.security.crypto.password.PasswordEncoder;
 //import org.springframework.stereotype.Component;

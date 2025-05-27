@@ -1,8 +1,7 @@
 package com.airport.admin.airport_admin.security;
 
-import com.airport.admin.airport_admin.models.User;
-import com.airport.admin.airport_admin.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.airport.admin.airport_admin.features.user.User;
+import com.airport.admin.airport_admin.features.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
