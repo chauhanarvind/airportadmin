@@ -30,10 +30,13 @@ public class StaffAvailability {
     @Column(nullable = false)
     private LocalDate date;
 
+    //if unavailableFrom and unavailableTo is null and isAvailable is true,
+    // that means fully available for whole day
     private LocalTime unavailableFrom;
 
     private LocalTime unavailableTo;
 
+//    indicates not available for whole day
     @Column(name = "is_available", nullable = false)
     private boolean isAvailable;
 }
