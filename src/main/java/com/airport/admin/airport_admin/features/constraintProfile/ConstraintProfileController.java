@@ -1,12 +1,17 @@
 package com.airport.admin.airport_admin.features.constraintProfile;
 
+import com.airport.admin.airport_admin.features.constraintProfile.dto.ConstraintProfileRequestDto;
+import com.airport.admin.airport_admin.features.constraintProfile.dto.ConstraintProfileResponseDto;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/constraint-profiles")
+@PreAuthorize("!hasAnyRole('Crew')")
 public class ConstraintProfileController {
 
     private final ConstraintProfileService constraintProfileService;
@@ -15,31 +20,34 @@ public class ConstraintProfileController {
         this.constraintProfileService = constraintProfileService;
     }
 
-    @GetMapping
-    public List<ConstraintProfile> getAllProfiles() {
-        return constraintProfileService.getAllProfiles();
+    @GetMapping("/")
+    public ResponseEntity<List<ConstraintProfileResponseDto>> getAllProfiles() {
+        return ResponseEntity.ok(constraintProfileService.getAllProfiles());
     }
 
-    @PostMapping
-    public ResponseEntity<ConstraintProfile> create(@RequestBody ConstraintProfileDto dto) {
+    @GetMapping("/{id}")
+    public ResponseEntity<ConstraintProfileResponseDto> getProfileById(@PathVariable Long id) {
+        return ResponseEntity.ok(constraintProfileService.getProfileById(id));
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<ConstraintProfileResponseDto> createProfile(
+            @Valid @RequestBody ConstraintProfileRequestDto dto
+    ) {
         return ResponseEntity.ok(constraintProfileService.createProfile(dto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ConstraintProfile> update(@PathVariable Long id, @RequestBody ConstraintProfileDto dto) {
+    public ResponseEntity<ConstraintProfileResponseDto> updateProfile(
+            @PathVariable Long id,
+            @Valid @RequestBody ConstraintProfileRequestDto dto
+    ) {
         return ResponseEntity.ok(constraintProfileService.updateProfile(id, dto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProfile(@PathVariable Long id) {
         constraintProfileService.deleteProfile(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ConstraintProfile> getById(@PathVariable Long id) {
-        return constraintProfileService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
     }
 }
