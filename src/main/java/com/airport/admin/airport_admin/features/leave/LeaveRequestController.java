@@ -1,12 +1,12 @@
 package com.airport.admin.airport_admin.features.leave;
 
 import com.airport.admin.airport_admin.enums.LeaveStatus;
-
+import com.airport.admin.airport_admin.features.leave.dto.*;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,75 +15,67 @@ import java.util.List;
 @RequestMapping("/api/leaves")
 public class LeaveRequestController {
 
-    private final LeaveRequestService leaveService;
+    private final LeaveRequestService leaveRequestService;
 
-    public LeaveRequestController(LeaveRequestService leaveService) {
-        this.leaveService = leaveService;
+    public LeaveRequestController(LeaveRequestService leaveRequestService) {
+        this.leaveRequestService = leaveRequestService;
     }
 
-    // Submit a new leave request
-    @PostMapping("/submit/{userId}")
-    public ResponseEntity<LeaveRequestDto> applyLeave(
-            @PathVariable Long userId,
-            @RequestBody LeaveRequestDto dto
-    ) {
-        LeaveRequestDto leave = leaveService.applyLeave(userId, dto);
-        return ResponseEntity.ok(leave);
+    // User: Apply for leave
+    @PostMapping("/apply")
+    public ResponseEntity<LeaveRequestGetDto> applyLeave(@Valid @RequestBody LeaveRequestCreateDto dto) {
+        return ResponseEntity.ok(leaveRequestService.applyLeave(dto));
     }
 
-    // Get leaves for a user
+    @GetMapping("/{id}")
+    public ResponseEntity<LeaveRequestGetDto> getLeaveById(@PathVariable Long id){
+        return ResponseEntity.ok(leaveRequestService.getLeaveByLeaveId(id));
+    }
+
+
+    // User: View own leave requests
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<LeaveRequestDto>> getUserLeaves(@PathVariable Long userId) {
-        return ResponseEntity.ok(leaveService.getLeavesByUser(userId));
+    public ResponseEntity<List<LeaveRequestGetDto>> getLeavesByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(leaveRequestService.getLeavesByUser(userId));
     }
 
-    // Admin: Get all leaves (paginated & sorted)
-    @GetMapping("/all")
-    public ResponseEntity<Page<LeaveRequestDto>> getAllLeavesPaged(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(leaveService.getAllLeavesPaged(pageable));
-    }
-
-    // Admin: Filtered search (by userId and/or status)
-    @GetMapping("/search")
-    public ResponseEntity<Page<LeaveRequestDto>> getFilteredLeaves(
+    // Admin/Supervisor/Manager: Paginated + Filtered
+    @GetMapping("/")
+    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
+    public ResponseEntity<Page<LeaveRequestGetDto>> getFilteredLeaves(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) LeaveStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            Pageable pageable
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(leaveService.getFilteredLeaves(userId, status, pageable));
+        return ResponseEntity.ok(leaveRequestService.getFilteredLeaves(userId, status, pageable));
     }
 
-    // Admin: Approve/Reject leave
-    @PutMapping("/{leaveId}/status")
-    public ResponseEntity<LeaveRequestDto> updateStatus(
-            @PathVariable Long leaveId,
-            @RequestParam LeaveStatus status
+    // Admin/Supervisor: Update leave status
+    @PutMapping("/{id}/status")
+    @PreAuthorize("!hasAnyRole('Crew')")
+    public ResponseEntity<LeaveRequestGetDto> updateStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody LeaveRequestUpdateDto dto
     ) {
-        return ResponseEntity.ok(leaveService.updateLeaveStatus(leaveId, status));
+        return ResponseEntity.ok(leaveRequestService.updateLeaveStatus(id, dto.getStatus()));
     }
 
-    //  User: Cancel leave
-    @PutMapping("/{leaveId}/cancel/{userId}")
-    public ResponseEntity<LeaveRequestDto> cancelLeave(
-            @PathVariable Long leaveId,
-            @PathVariable Long userId
+    // User: Cancel leave
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<LeaveRequestGetDto> cancelLeave(
+            @PathVariable Long id,
+            @RequestParam Long userId
     ) {
-        return ResponseEntity.ok(leaveService.cancelLeave(leaveId, userId));
+        return ResponseEntity.ok(leaveRequestService.cancelLeave(id, userId));
     }
 
     // User: Resubmit rejected/cancelled leave
-    @PutMapping("/{leaveId}/resubmit/{userId}")
-    public ResponseEntity<LeaveRequestDto> resubmitLeave(
-            @PathVariable Long leaveId,
-            @PathVariable Long userId,
-            @RequestBody LeaveRequestDto dto
+    @PutMapping("/{id}/resubmit")
+    public ResponseEntity<LeaveRequestGetDto> resubmitLeave(
+            @PathVariable Long id,
+            @Valid @RequestBody LeaveRequestCreateDto dto,
+            @RequestParam Long userId
     ) {
-        return ResponseEntity.ok(leaveService.resubmitLeave(leaveId, dto, userId));
+        return ResponseEntity.ok(leaveRequestService.resubmitLeave(id, dto, userId));
     }
 }

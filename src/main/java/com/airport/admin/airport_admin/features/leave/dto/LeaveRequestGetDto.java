@@ -1,4 +1,4 @@
-package com.airport.admin.airport_admin.features.leave;
+package com.airport.admin.airport_admin.features.leave.dto;
 
 import com.airport.admin.airport_admin.enums.LeaveStatus;
 import lombok.Getter;
@@ -9,19 +9,14 @@ import java.time.OffsetDateTime;
 
 @Getter
 @Setter
-public class LeaveRequestDto {
+public class LeaveRequestGetDto {
 
     private Long id;
-
     private LocalDate startDate;
     private LocalDate endDate;
-
-    private String reason;
-
     private LeaveStatus status;
-
     private Long userId;
-    private String userFullName;
-
+    private String userName;      // Optional for display
+    private String reason;
     private OffsetDateTime createdAt;
 }

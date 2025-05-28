@@ -1,28 +1,39 @@
 package com.airport.admin.airport_admin.features.leave;
 
-import org.springframework.stereotype.Component;
+import com.airport.admin.airport_admin.features.leave.dto.*;
+
+import com.airport.admin.airport_admin.features.user.User;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Component
 public class LeaveRequestMapper {
-    public LeaveRequestDto toDto(LeaveRequest leave) {
-        LeaveRequestDto dto = new LeaveRequestDto();
-        dto.setId(leave.getId());
-        dto.setStartDate(leave.getStartDate());
-        dto.setEndDate(leave.getEndDate());
-        dto.setReason(leave.getReason());
-        dto.setStatus(leave.getStatus());
-        dto.setCreatedAt(leave.getCreatedAt());
 
-        dto.setUserId(leave.getUser().getId());
-        dto.setUserFullName(leave.getUser().getFirstName() + " " + leave.getUser().getLastName());
+    public static LeaveRequest toEntity(LeaveRequestCreateDto dto, User user) {
+        LeaveRequest entity = new LeaveRequest();
+        entity.setStartDate(dto.getStartDate());
+        entity.setEndDate(dto.getEndDate());
+        entity.setReason(dto.getReason());
+        entity.setUser(user);
+        return entity;
+    }
 
+    public static LeaveRequestGetDto toDto(LeaveRequest entity) {
+        LeaveRequestGetDto dto = new LeaveRequestGetDto();
+        dto.setId(entity.getId());
+        dto.setStartDate(entity.getStartDate());
+        dto.setEndDate(entity.getEndDate());
+        dto.setStatus(entity.getStatus());
+        dto.setUserId(entity.getUser().getId());
+        dto.setUserName(entity.getUser().getFirstName() + " " + entity.getUser().getLastName()); // or .getName() if available
+        dto.setReason(entity.getReason());
+        dto.setCreatedAt(entity.getCreatedAt());
         return dto;
     }
 
-    public List<LeaveRequestDto> mapToDtoList(List<LeaveRequest> list) {
-        return list.stream().map(this::toDto).toList();
+    public static List<LeaveRequestGetDto> toDtoList(List<LeaveRequest> entities) {
+        return entities.stream()
+                .map(LeaveRequestMapper::toDto)
+                .collect(Collectors.toList());
     }
-
 }
