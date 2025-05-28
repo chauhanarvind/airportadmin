@@ -1,43 +1,56 @@
 package com.airport.admin.airport_admin.features.jobLevel;
 
+import com.airport.admin.airport_admin.features.jobLevel.dto.JobLevelRequestDto;
+import com.airport.admin.airport_admin.features.jobLevel.dto.JobLevelResponseDto;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class JobLevelService {
+
     private final JobLevelRepository jobLevelRepository;
-    private JobLevelService(JobLevelRepository jobLevelRepository){
+
+    public JobLevelService(JobLevelRepository jobLevelRepository) {
         this.jobLevelRepository = jobLevelRepository;
     }
 
-    public List<JobLevel> getAllJobLevels(){
-        return jobLevelRepository.findAll();
+    public List<JobLevelResponseDto> getAllJobLevels() {
+        List<JobLevel> jobLevels = jobLevelRepository.findAll();
+        return JobLevelMapper.toDtoList(jobLevels);
     }
 
-    public JobLevel createJobLevel(JobLevelDto jobLevelDto){
-        if(jobLevelRepository.findByLevelName(jobLevelDto.getLevelName()).isPresent()){
+    public JobLevelResponseDto getJobLevelById(Long id) {
+        JobLevel jobLevel = jobLevelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job level does not exist"));
+        return JobLevelMapper.toDto(jobLevel);
+    }
+
+    public JobLevelResponseDto createJobLevel(JobLevelRequestDto dto) {
+        Optional<JobLevel> existing = jobLevelRepository.findByLevelName(dto.getLevelName());
+        if (existing.isPresent()) {
             throw new RuntimeException("Job level with this name already exists");
         }
 
-        JobLevel jobLevel = new JobLevel();
-        jobLevel.setLevelName(jobLevelDto.getLevelName());
-
-        return jobLevelRepository.save(jobLevel);
+        JobLevel jobLevel = JobLevelMapper.toEntity(dto);
+        jobLevel = jobLevelRepository.save(jobLevel);
+        return JobLevelMapper.toDto(jobLevel);
     }
 
-    public JobLevel updateJobLevel(JobLevelDto jobLevelDto){
-        JobLevel jobLevel = jobLevelRepository.findById(jobLevelDto.getId())
-                .orElseThrow(()-> new RuntimeException("Job level does not exist"));
+    public JobLevelResponseDto updateJobLevel(Long id, JobLevelRequestDto dto) {
+        JobLevel existing = jobLevelRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job level does not exist"));
 
-        jobLevel.setLevelName(jobLevelDto.getLevelName());
-        return jobLevelRepository.save(jobLevel);
+        JobLevelMapper.updateEntity(existing, dto);
+        existing = jobLevelRepository.save(existing);
+        return JobLevelMapper.toDto(existing);
     }
 
-    public void deleteJobLevel(Long id){
+    public void deleteJobLevel(Long id) {
         JobLevel jobLevel = jobLevelRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Job level does not exist"));
-
+                .orElseThrow(() -> new RuntimeException("Job level does not exist"));
         jobLevelRepository.delete(jobLevel);
     }
 }

@@ -1,50 +1,56 @@
 package com.airport.admin.airport_admin.features.location;
 
+import com.airport.admin.airport_admin.features.location.dto.LocationRequestDto;
+import com.airport.admin.airport_admin.features.location.dto.LocationResponseDto;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LocationService {
+
     private final LocationRepository locationRepository;
 
-    private LocationService(LocationRepository locationRepository){
+    public LocationService(LocationRepository locationRepository) {
         this.locationRepository = locationRepository;
     }
 
-    public List<Location> getAllLocations(){
-        return locationRepository.findAll();
+    public List<LocationResponseDto> getAllLocations() {
+        List<Location> locations = locationRepository.findAll();
+        return LocationMapper.toDtoList(locations);
     }
 
-    public Location createLocation(LocationDto locationDto){
-        if(locationRepository.findByLocationName(locationDto.getLocationName()).isPresent()){
-            throw  new RuntimeException("Location with this name already exits");
+    public LocationResponseDto getLocationById(Long id) {
+        Location location = locationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Location does not exist"));
+        return LocationMapper.toDto(location);
+    }
+
+    public LocationResponseDto createLocation(LocationRequestDto dto) {
+        Optional<Location> existing = locationRepository.findByLocationName(dto.getLocationName());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Location with this name already exists");
         }
 
-        Location location = new Location();
-        location.setLocationName(locationDto.getLocationName());
-        location.setDescription(locationDto.getDescription());
-
-        return locationRepository.save(location);
+        Location location = LocationMapper.toEntity(dto);
+        location = locationRepository.save(location);
+        return LocationMapper.toDto(location);
     }
 
-    public Location updateLocation(LocationDto locationDto){
-        Location location = locationRepository.findById(locationDto.getId())
-                .orElseThrow(()-> new RuntimeException("Location does not exist"));
+    public LocationResponseDto updateLocation(Long id, LocationRequestDto dto) {
+        Location existing = locationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Location does not exist"));
 
-        location.setLocationName(locationDto.getLocationName());
-        location.setDescription(locationDto.getDescription());
-
-        return locationRepository.save(location);
-
+        LocationMapper.updateEntity(existing, dto);
+        existing = locationRepository.save(existing);
+        return LocationMapper.toDto(existing);
     }
 
-    public void deleteLocation(LocationDto locationDto){
-        Location location = locationRepository.findById(locationDto.getId())
-                .orElseThrow(()-> new RuntimeException("Location does not exist"));
-
+    public void deleteLocation(Long id) {
+        Location location = locationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Location does not exist"));
         locationRepository.delete(location);
     }
-
-
 }

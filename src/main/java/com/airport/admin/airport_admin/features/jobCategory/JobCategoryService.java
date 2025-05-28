@@ -1,46 +1,56 @@
 package com.airport.admin.airport_admin.features.jobCategory;
 
+import com.airport.admin.airport_admin.features.jobCategory.dto.JobCategoryRequestDto;
+import com.airport.admin.airport_admin.features.jobCategory.dto.JobCategoryResponseDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class JobCategoryService {
+
     private final JobCategoryRepository jobCategoryRepository;
 
-    private JobCategoryService(JobCategoryRepository jobCategoryRepository){
+    public JobCategoryService(JobCategoryRepository jobCategoryRepository) {
         this.jobCategoryRepository = jobCategoryRepository;
     }
 
-    public List<JobCategory> getAllJobCategory(){
-        return jobCategoryRepository.findAll();
+    public List<JobCategoryResponseDto> getAllJobCategories() {
+        List<JobCategory> categories = jobCategoryRepository.findAll();
+        return JobCategoryMapper.toDtoList(categories);
     }
 
-    public JobCategory createJobCategory(JobCategoryDto jobCategoryDto){
-        if(jobCategoryRepository.findByCategoryName(jobCategoryDto.getCategoryName()).isPresent()){
-            throw new RuntimeException("Job Category with this name already exists");
+    public JobCategoryResponseDto getJobCategoryById(Long id) {
+        JobCategory category = jobCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job category does not exist"));
+        return JobCategoryMapper.toDto(category);
+    }
+
+    public JobCategoryResponseDto createJobCategory(JobCategoryRequestDto dto) {
+        Optional<JobCategory> existing = jobCategoryRepository.findByCategoryName(dto.getCategoryName());
+        if (existing.isPresent()) {
+            throw new RuntimeException("Job category with this name already exists");
         }
 
-        JobCategory jobCategory = new JobCategory();
-        jobCategory.setCategoryName(jobCategoryDto.getCategoryName());
-        return jobCategoryRepository.save(jobCategory);
+        JobCategory category = JobCategoryMapper.toEntity(dto);
+        category = jobCategoryRepository.save(category);
+        return JobCategoryMapper.toDto(category);
     }
 
-    public JobCategory updateJobCategory(JobCategoryDto jobCategoryDto){
-        JobCategory jobCategory = jobCategoryRepository.findById(jobCategoryDto.getId())
-                .orElseThrow(()-> new RuntimeException("Job category does not exist"));
+    public JobCategoryResponseDto updateJobCategory(Long id, JobCategoryRequestDto dto) {
+        JobCategory existing = jobCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job category does not exist"));
 
-        jobCategory.setCategoryName(jobCategoryDto.getCategoryName());
+        JobCategoryMapper.updateEntity(existing, dto);
+        JobCategory updated = jobCategoryRepository.save(existing);
 
-        return jobCategoryRepository.save(jobCategory);
+        return JobCategoryMapper.toDto(updated);
     }
 
-    public void deleteJobCategory(Long id){
-        JobCategory jobCategory = jobCategoryRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Job category does not exist"));
-
-        jobCategoryRepository.delete(jobCategory);
+    public void deleteJobCategory(Long id) {
+        JobCategory category = jobCategoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job category does not exist"));
+        jobCategoryRepository.delete(category);
     }
-
-
 }
