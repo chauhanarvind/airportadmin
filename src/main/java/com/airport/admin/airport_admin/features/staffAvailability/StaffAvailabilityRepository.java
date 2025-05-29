@@ -11,8 +11,8 @@ import java.util.Optional;
 
 public interface StaffAvailabilityRepository extends JpaRepository<StaffAvailability, Long> {
 
+    Optional<StaffAvailability> findByUserAndDate(User user, LocalDate date);
     Optional<StaffAvailability> findByUserIdAndDate(Long userId, LocalDate date);
-
     List<StaffAvailability> findByUserId(Long userId);
 
 }
