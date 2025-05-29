@@ -1,10 +1,8 @@
 package com.airport.admin.airport_admin.features.staffing;
 
 import com.airport.admin.airport_admin.enums.RosterStatus;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestDetailDto;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestsDto;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestsSummaryDto;
-import com.airport.admin.airport_admin.features.staffing.model.StaffingRequest;
+import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequest.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -22,39 +21,39 @@ public class StaffingRequestController {
 
     @Autowired
     private StaffingRequestService staffingRequestService;
-    @Autowired
-    private StaffingRequestMapper staffingRequestMapper;
+
     // 1. Submit a new staffing request
     @PostMapping("/submit")
     @PreAuthorize("!hasAnyRole('Crew')")
-    public ResponseEntity<StaffingRequest> submitRequest(@RequestBody StaffingRequestsDto dto) {
-        StaffingRequest request = staffingRequestService.submitRequest(dto);
-        return ResponseEntity.ok(request);
+    public ResponseEntity<StaffingRequestResponseDto> submitRequest(
+            @Valid @RequestBody StaffingRequestCreateDto dto
+    ) {
+        StaffingRequestResponseDto response = staffingRequestService.submitRequest(dto);
+        return ResponseEntity.ok(response);
     }
 
-    // 4. Get a specific request by ID
+    // 2. Get a specific request by ID (detailed view)
     @GetMapping("/{id}")
     @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<StaffingRequestDetailDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(staffingRequestService.getRequestById(id));
     }
 
-    // 5. Approve/reject a request (admin or supervisor only)
-    @PutMapping("/{id}/status") //we will just be updating the status
-    @PreAuthorize("hasAnyRole('Admin' , 'Supervisor')")
-    public ResponseEntity<RosterStatus> updateStatus(@PathVariable Long id,
-                                                        @RequestParam RosterStatus status) {
-
-        //need to add check here for update only if the status is pending else throw error
-
-        staffingRequestService.updateStatus(id,status);
-        return ResponseEntity.ok(status);
+    // 3. Approve/reject a request (Admin or Supervisor only)
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('Admin', 'Supervisor')")
+    public ResponseEntity<StaffingRequestUpdateDto> updateStatus(
+            @PathVariable Long id,
+            @RequestParam RosterStatus status
+    ) {
+        staffingRequestService.updateStatus(id, status);
+        return ResponseEntity.ok().build();
     }
 
-    // 6. get filtered requests
-    @PreAuthorize("!hasAnyRole('Crew')")
+    // 4. Get filtered or paged requests
     @GetMapping("/")
-    public Page<StaffingRequestsSummaryDto> getRequestsFiltered(
+    @PreAuthorize("!hasAnyRole('Crew')")
+    public ResponseEntity<Page<StaffingRequestResponseDto>> getRequestsFiltered(
             @RequestParam Optional<Integer> page,
             @RequestParam Optional<Integer> size,
             @RequestParam Optional<Long> managerId,
@@ -67,13 +66,18 @@ public class StaffingRequestController {
                 Sort.by("createdAt").descending()
         );
 
-        boolean hasFilters =  managerId.isPresent() || locationId.isPresent() || status.isPresent();
-
-        Page<StaffingRequest> result = hasFilters
-                ? staffingRequestService.getFilteredRequests( managerId, locationId,status, pageable)
+        Page<StaffingRequestResponseDto> result = (managerId.isPresent() || locationId.isPresent() || status.isPresent())
+                ? staffingRequestService.getFilteredRequests(managerId, locationId, status, pageable)
                 : staffingRequestService.getRequestsPaged(page.orElse(0), size.orElse(20));
 
-        return result.map(staffingRequestMapper::toSummaryDto);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/user/{managerId}")
+    @PreAuthorize("!hasRole('Crew')")
+    public ResponseEntity<List<StaffingRequestResponseDto>> getByManagerId(@PathVariable Long managerId) {
+        List<StaffingRequestResponseDto> requests = staffingRequestService.getRequestsByManagerId(managerId);
+        return ResponseEntity.ok(requests);
     }
 
 }
