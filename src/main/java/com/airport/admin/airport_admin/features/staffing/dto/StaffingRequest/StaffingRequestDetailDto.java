@@ -25,6 +25,7 @@ public class StaffingRequestDetailDto {
     private RequestType requestType;
     private RosterStatus status;
     private OffsetDateTime createdAt;
+    private int unassignedShiftCount;
 
     private List<StaffingRequestDayDetailDto> days;
 }

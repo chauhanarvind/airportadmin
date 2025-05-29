@@ -46,8 +46,10 @@ public class StaffingRequest {
     @CreationTimestamp
     private OffsetDateTime createdAt;
 
-
     @OneToMany(mappedBy = "request", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StaffingRequestDay> days;
+
+    @Column(name = "unassigned_shift_count", nullable = false)
+    private int unassignedShiftCount = 0;
 
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class RosterAssignmentMapper {
+
     public RosterAssignmentDto toDto(RosterAssignment assignment) {
         RosterAssignmentDto dto = new RosterAssignmentDto();
 
@@ -14,12 +15,21 @@ public class RosterAssignmentMapper {
         dto.setDate(assignment.getDate());
         dto.setStartTime(assignment.getStartTime());
         dto.setEndTime(assignment.getEndTime());
+        dto.setUnassigned(assignment.isUnassigned());
 
-        dto.setUserFullName(
-                assignment.getUser().getFirstName() + " " + assignment.getUser().getLastName()
-        );
-        dto.setRoleName(assignment.getRole().getRoleName());
-        dto.setLocationName(assignment.getLocation().getLocationName());
+        if (assignment.getUser() != null) {
+            dto.setUserFullName(assignment.getUser().getFirstName() + " " + assignment.getUser().getLastName());
+        } else {
+            dto.setUserFullName("Unassigned");
+        }
+
+        if (assignment.getRole() != null) {
+            dto.setRoleName(assignment.getRole().getRoleName());
+        }
+
+        if (assignment.getLocation() != null) {
+            dto.setLocationName(assignment.getLocation().getLocationName());
+        }
 
         return dto;
     }
@@ -29,6 +39,4 @@ public class RosterAssignmentMapper {
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
-
-
 }

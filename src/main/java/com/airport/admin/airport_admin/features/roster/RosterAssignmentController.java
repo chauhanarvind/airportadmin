@@ -33,6 +33,13 @@ public class RosterAssignmentController {
         return ResponseEntity.ok("Roster generated successfully.");
     }
 
+    @GetMapping("/{id}/{requestId}")
+    public ResponseEntity<Boolean> checkIfRosterExists(@PathVariable Long requestId) {
+        boolean exists = rosterService.rosterExistsForRequest(requestId);
+        return ResponseEntity.ok(exists);
+    }
+
+
     //  Regenerate (delete + generate)
     @PostMapping("/regenerate/{requestId}")
     public ResponseEntity<?> regenerateRoster(@PathVariable Long requestId) {
@@ -42,11 +49,15 @@ public class RosterAssignmentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RosterAssignmentDto>> getRosterForWeek(
+    public ResponseEntity<?> getRosterForWeek(
             @RequestParam("startDate")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam("locationId") Long locationId
     ) {
+        if (startDate == null || locationId == null) {
+            return ResponseEntity.badRequest().body("startDate and locationId are required.");
+        }
+
         LocalDate endDate = startDate.plusDays(6);
         List<RosterAssignment> assignments = rosterAssignmentRepository
                 .findByDateBetweenAndLocationIdOrderByDateAscStartTimeAsc(startDate, endDate, locationId);

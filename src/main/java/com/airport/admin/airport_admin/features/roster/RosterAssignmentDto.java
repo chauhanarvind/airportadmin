@@ -20,4 +20,6 @@ public class RosterAssignmentDto {
     private LocalTime endTime;
 
     private String locationName;
+
+    private boolean unassigned;
 }
