@@ -41,14 +41,14 @@ public class StaffingRequestController {
 
     // 3. Approve/reject a request (Admin or Supervisor only)
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor')")
-    public ResponseEntity<StaffingRequestUpdateDto> updateStatus(
+    public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
-            @RequestParam RosterStatus status
+            @RequestBody @Valid StaffingRequestUpdateDto updateDto
     ) {
-        staffingRequestService.updateStatus(id, status);
+        staffingRequestService.updateStatus(id, updateDto.getStatus());
         return ResponseEntity.ok().build();
     }
+
 
     // 4. Get filtered or paged requests
     @GetMapping("/")
