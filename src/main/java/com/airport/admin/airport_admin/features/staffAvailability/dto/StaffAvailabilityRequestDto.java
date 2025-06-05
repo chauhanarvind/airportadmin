@@ -13,15 +13,15 @@ import java.time.LocalTime;
 @ValidTimeRange
 public class StaffAvailabilityRequestDto {
 
-    @NotNull(message = "User ID is required")
+    @NotNull(message = "user id is required")
     private Long userId;
 
-    @NotNull(message = "Date is required")
+    @NotNull(message = "date is required")
     private LocalDate date;
 
     private LocalTime unavailableFrom;
     private LocalTime unavailableTo;
 
-    @NotNull(message = "Availability status is required")
+    @NotNull(message = "availability status is required")
     private Boolean isAvailable;
 }

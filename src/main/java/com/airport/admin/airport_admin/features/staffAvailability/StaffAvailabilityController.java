@@ -20,6 +20,7 @@ public class StaffAvailabilityController {
     }
 
     @GetMapping("/")
+    @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<List<StaffAvailabilityResponseDto>> getAllAvailability() {
         return ResponseEntity.ok(staffAvailabilityService.getAllAvailability());
     }
@@ -27,6 +28,7 @@ public class StaffAvailabilityController {
 
     // Create or update availability for a user
     @PostMapping
+    @PreAuthorize("#dto.userId == authentication.principal.id")
     public ResponseEntity<StaffAvailabilityResponseDto> saveAvailability(
             @Valid @RequestBody StaffAvailabilityRequestDto dto
     ) {
@@ -35,6 +37,7 @@ public class StaffAvailabilityController {
 
     // Get all availability entries for a user
     @GetMapping("/user/{userId}")
+    @PreAuthorize("#userId == authentication.principal.id")
     public ResponseEntity<List<StaffAvailabilityResponseDto>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(staffAvailabilityService.getAvailabilityByUser(userId));
     }
@@ -42,12 +45,14 @@ public class StaffAvailabilityController {
 
     // Get single availability entry by ID
     @GetMapping("/{id}")
+    @PreAuthorize("@availabilitySecurity.canView(#id, authentication) or hasRole('Admin')") //can only be viewed by the authenticated user or admin
     public ResponseEntity<StaffAvailabilityResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(staffAvailabilityService.getById(id));
     }
 
     // Delete an entry
     @DeleteMapping("/{id}")
+    @PreAuthorize("@availabilitySecurity.canModify(#id, authentication) or hasRole('Admin')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         staffAvailabilityService.deleteById(id);
         return ResponseEntity.noContent().build();

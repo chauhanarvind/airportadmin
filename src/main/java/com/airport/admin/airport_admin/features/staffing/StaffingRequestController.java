@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/staffing-requests")
-@PreAuthorize("!hasAnyRole('Crew')")
+@PreAuthorize("!hasAnyRole('Crew')") // can be accessed by anyone except crew
 public class StaffingRequestController {
 
     @Autowired
@@ -38,8 +38,9 @@ public class StaffingRequestController {
         return ResponseEntity.ok(staffingRequestService.getRequestById(id));
     }
 
-    // 3. Approve/reject a request (Admin or Supervisor only)
+    // 3. Approve/reject a request (Admin only)
     @PutMapping("/status/{id}")
+    @PreAuthorize("hasRole('Admin')") //can be updated only by admin
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
             @RequestBody @Valid StaffingRequestUpdateDto updateDto
@@ -73,6 +74,7 @@ public class StaffingRequestController {
 
     // the manager id can be admin or supervisor too.
     @GetMapping("/user/{managerId}")
+    @PreAuthorize("#managerId == authentication.principal.id or hasRole('Admin')") // can be accessed only if the data belongs to that user or if the user is admin
     public ResponseEntity<List<StaffingRequestResponseDto>> getByManagerId(@PathVariable Long managerId) {
         List<StaffingRequestResponseDto> requests = staffingRequestService.getRequestsByManagerId(managerId);
         return ResponseEntity.ok(requests);
