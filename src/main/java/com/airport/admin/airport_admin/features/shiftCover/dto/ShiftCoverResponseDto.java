@@ -10,11 +10,11 @@ import java.time.LocalTime;
 
 @Getter
 @Setter
-public class ShiftCoverRequestDto {
+public class ShiftCoverResponseDto {
 
     private Long id;
-    private Long originalUserId;
-    private Long coveringUserId;
+    private UserSummaryDto originalUser;
+    private UserSummaryDto coveringUser;
     private LocalDate shiftDate;
     private LocalTime startTime;
     private LocalTime endTime;

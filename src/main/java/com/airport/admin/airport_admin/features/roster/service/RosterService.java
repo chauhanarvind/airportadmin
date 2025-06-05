@@ -6,7 +6,6 @@ import com.airport.admin.airport_admin.features.jobRole.JobRole;
 import com.airport.admin.airport_admin.features.leave.LeaveRequestRepository;
 import com.airport.admin.airport_admin.features.roster.RosterAssignment;
 import com.airport.admin.airport_admin.features.roster.RosterAssignmentRepository;
-import com.airport.admin.airport_admin.features.roster.UserEligibilityChecker;
 import com.airport.admin.airport_admin.features.staffAvailability.StaffAvailabilityRepository;
 import com.airport.admin.airport_admin.features.staffing.model.StaffingRequest;
 import com.airport.admin.airport_admin.features.staffing.model.StaffingRequestDay;

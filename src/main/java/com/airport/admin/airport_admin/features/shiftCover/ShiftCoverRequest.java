@@ -35,9 +35,6 @@ public class ShiftCoverRequest {
     @Enumerated(EnumType.STRING)
     private CoverRequestStatus status = CoverRequestStatus.PENDING;
 
-    @Column(columnDefinition = "TEXT")
-    private String warnings; // Optional JSON or plain string
-
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // Getters and setters (or use Lombok)
