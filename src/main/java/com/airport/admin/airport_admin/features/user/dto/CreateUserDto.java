@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dto to create
 @Getter
 @Setter
 public class CreateUserDto {

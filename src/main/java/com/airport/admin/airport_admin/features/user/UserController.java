@@ -5,16 +5,16 @@ import com.airport.admin.airport_admin.features.user.dto.UpdateUserDto;
 import com.airport.admin.airport_admin.features.user.dto.UserResponseDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('Admin')")
 public class UserController {
 
     private final UserService userService;
@@ -36,14 +36,14 @@ public class UserController {
     }
 
 
+    //adding pagination
     @GetMapping("/")
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        var users = userService.getAllUsers()
-                .stream()
-                .map(userMapper::toDto)
-                .collect(Collectors.toList());
+    public ResponseEntity<Page<UserResponseDto>> getAllUsers(Pageable pageable) {
+        var users = userService.getAllUsers(pageable)
+                .map(userMapper::toDto); // Page.map keeps pagination metadata
         return ResponseEntity.ok(users);
     }
+
 
 
     @GetMapping("/email/{email}")

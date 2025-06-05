@@ -3,6 +3,7 @@ package com.airport.admin.airport_admin.features.user.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+// dto for get requests
 @Getter
 @Setter
 public class UserResponseDto {

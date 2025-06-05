@@ -1,10 +1,10 @@
 package com.airport.admin.airport_admin.features.user.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+// dto to update
 @Getter
 @Setter
 public class UpdateUserDto {
