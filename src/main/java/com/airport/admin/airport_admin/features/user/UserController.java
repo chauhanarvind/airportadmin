@@ -20,14 +20,14 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    @PreAuthorize("hasRole('Admin')")
+
     @PostMapping("/create")
     public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserDto dto) {
         var user = userService.createUser(dto);
         return ResponseEntity.ok(userMapper.toDto(user));
     }
 
-    @PreAuthorize("hasRole('Admin')")
+
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserDto dto) {
         dto.setId(id); // Ensure ID from path is set
@@ -35,7 +35,7 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDto(updatedUser));
     }
 
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
+
     @GetMapping("/")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         var users = userService.getAllUsers()
@@ -45,7 +45,7 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
+
     @GetMapping("/email/{email}")
     public ResponseEntity<UserResponseDto> getUserByEmail(@PathVariable String email) {
         return userService.findUserByEmail(email)
@@ -54,14 +54,14 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasRole('Admin')")
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
         User user = userService.findUserById(id);

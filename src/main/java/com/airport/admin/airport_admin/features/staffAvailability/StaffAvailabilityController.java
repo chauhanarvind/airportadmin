@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/staff-availability")
-@PreAuthorize("!hasRole('Crew')") // Adjust as needed
 public class StaffAvailabilityController {
 
     private final StaffAvailabilityService staffAvailabilityService;
@@ -21,7 +20,6 @@ public class StaffAvailabilityController {
     }
 
     @GetMapping("/")
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
     public ResponseEntity<List<StaffAvailabilityResponseDto>> getAllAvailability() {
         return ResponseEntity.ok(staffAvailabilityService.getAllAvailability());
     }

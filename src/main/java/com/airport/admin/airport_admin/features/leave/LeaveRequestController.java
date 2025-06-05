@@ -41,7 +41,6 @@ public class LeaveRequestController {
 
     // Admin/Supervisor/Manager: Paginated + Filtered
     @GetMapping("/")
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Manager')")
     public ResponseEntity<Page<LeaveRequestGetDto>> getFilteredLeaves(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) LeaveStatus status,
@@ -52,7 +51,6 @@ public class LeaveRequestController {
 
     // Admin/Supervisor: Update leave status
     @PutMapping("/{id}/status")
-    @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<LeaveRequestGetDto> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody LeaveRequestUpdateDto dto

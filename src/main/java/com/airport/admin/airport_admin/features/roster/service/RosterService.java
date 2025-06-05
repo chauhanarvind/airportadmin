@@ -30,9 +30,6 @@ public class RosterService {
     private final StaffingRequestRepository staffingRequestRepository;
     private final RosterAssignmentRepository rosterAssignmentRepository;
     private final UserRepository userRepository;
-    private final LeaveRequestRepository leaveRequestRepository;
-    private final StaffAvailabilityRepository staffAvailabilityRepository;
-    private final ConstraintProfileRepository constraintProfileRepository;
 
     @Autowired private RosterServiceHelpers rosterServiceHelpers;
     @Autowired private UserEligibilityChecker eligibilityChecker;
@@ -48,9 +45,6 @@ public class RosterService {
         this.staffingRequestRepository = staffingRequestRepository;
         this.rosterAssignmentRepository = rosterAssignmentRepository;
         this.userRepository = userRepository;
-        this.leaveRequestRepository = leaveRequestRepository;
-        this.staffAvailabilityRepository = staffAvailabilityRepository;
-        this.constraintProfileRepository = constraintProfileRepository;
     }
 
     @Transactional
@@ -74,7 +68,6 @@ public class RosterService {
 
                 validateShift(shiftStart, shiftEnd);
 
-                // Find eligible users
                 List<User> eligibleUsers = userRepository.findAll().stream()
                         .filter(user -> user.getJobRole().getId().equals(requiredRole.getId()))
                         .filter(user -> user.getJobLevel().getId().equals(requiredLevel.getId()))
@@ -84,9 +77,10 @@ public class RosterService {
                         .limit(requiredCount)
                         .collect(Collectors.toList());
 
-                // Assign selected users
+                // Assigned users
                 for (User selected : eligibleUsers) {
                     RosterAssignment assignment = new RosterAssignment();
+                    assignment.setRequest(request); // ✅ Link to staffing request
                     assignment.setUser(selected);
                     assignment.setUnassigned(false);
                     assignment.setDate(date);
@@ -97,10 +91,11 @@ public class RosterService {
                     rosterAssignmentRepository.save(assignment);
                 }
 
-                // Create placeholders for unassigned slots
+                // Unassigned slots
                 int missingCount = requiredCount - eligibleUsers.size();
                 for (int i = 0; i < missingCount; i++) {
                     RosterAssignment unassigned = new RosterAssignment();
+                    unassigned.setRequest(request); // ✅ Link to staffing request
                     unassigned.setUser(null);
                     unassigned.setUnassigned(true);
                     unassigned.setDate(date);
@@ -119,28 +114,16 @@ public class RosterService {
         staffingRequestRepository.save(request);
     }
 
-    public boolean rosterExistsForRequest(Long staffingRequestId) {
-        StaffingRequest request = staffingRequestRepository.findById(staffingRequestId)
-                .orElseThrow(() -> new RuntimeException("Staffing request not found"));
-
-        Long locationId = request.getLocation().getId();
-
-        return request.getDays().stream()
-                .map(StaffingRequestDay::getDate)
-                .anyMatch(date ->
-                        !rosterAssignmentRepository.findByDateAndLocationId(date, locationId).isEmpty());
+    public List<RosterAssignment> getRosterAssignmentsForRequest(Long requestId) {
+        return rosterAssignmentRepository.findByRequestIdOrderByDateAscStartTimeAsc(requestId);
     }
 
-    public void deleteExistingAssignmentsForRequest(Long staffingRequestId) {
-        StaffingRequest request = staffingRequestRepository.findById(staffingRequestId)
-                .orElseThrow(() -> new RuntimeException("Staffing request not found"));
+    public boolean rosterExistsForRequest(Long requestId) {
+        return !rosterAssignmentRepository.findByRequestIdOrderByDateAscStartTimeAsc(requestId).isEmpty();
+    }
 
-        List<LocalDate> dates = request.getDays().stream()
-                .map(StaffingRequestDay::getDate)
-                .toList();
-
-        Long locationId = request.getLocation().getId();
-        rosterAssignmentRepository.deleteByDateInAndLocationId(dates, locationId);
+    public void deleteExistingAssignmentsForRequest(Long requestId) {
+        rosterAssignmentRepository.deleteByRequestId(requestId);
     }
 
     public void validateShift(LocalTime start, LocalTime end) {

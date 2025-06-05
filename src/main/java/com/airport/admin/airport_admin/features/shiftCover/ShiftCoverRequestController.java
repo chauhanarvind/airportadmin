@@ -15,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cover-requests")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('Admin', 'Supervisor', 'Staff')")
 public class ShiftCoverRequestController {
 
     private final ShiftCoverRequestService coverRequestService;
@@ -53,17 +52,14 @@ public class ShiftCoverRequestController {
         return ResponseEntity.ok(coverRequestService.getApprovalWarnings(id));
     }
 
-    // ✅ Approve a pending cover request
+
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor')")
     public ResponseEntity<Void> approveRequest(@PathVariable Long id) {
         coverRequestService.approveRequest(id);
         return ResponseEntity.ok().build();
     }
 
-    // ❌ Reject a pending cover request
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('Admin', 'Supervisor')")
     public ResponseEntity<Void> rejectRequest(@PathVariable Long id) {
         coverRequestService.rejectRequest(id);
         return ResponseEntity.ok().build();

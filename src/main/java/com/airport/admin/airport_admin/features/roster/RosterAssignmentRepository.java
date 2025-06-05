@@ -21,9 +21,18 @@ public interface RosterAssignmentRepository extends JpaRepository<RosterAssignme
 
     // Delete by dates and location (used during auto-gen overwrite)
     void deleteByDateInAndLocationId(List<LocalDate> dates, Long locationId);
+    List<RosterAssignment> findByUserIdAndDateGreaterThanEqualOrderByDateAscStartTimeAsc(
+            Long userId, LocalDate date
+    );
 
+
+
+
+    void deleteByRequestId(Long requestId);
     // Fetch by date + location
     List<RosterAssignment> findByDateAndLocationId(LocalDate date, Long locationId);
+
+    List<RosterAssignment> findByUserIdOrderByDateAscStartTimeAsc(Long userId);
 
     // Fetch by date range + location
     List<RosterAssignment> findByDateBetweenAndLocationId(LocalDate start, LocalDate end, Long locationId);
@@ -32,6 +41,8 @@ public interface RosterAssignmentRepository extends JpaRepository<RosterAssignme
     List<RosterAssignment> findByDateBetweenAndLocationIdOrderByDateAscStartTimeAsc(
             LocalDate start, LocalDate end, Long locationId
     );
+    List<RosterAssignment> findByDateInAndLocationIdOrderByDateAscStartTimeAsc(List<LocalDate> dates, Long locationId);
+    List<RosterAssignment> findByRequestIdOrderByDateAscStartTimeAsc(Long requestId);
 
     //  Check if user has overlapping shift on given date and time
     @Query("""

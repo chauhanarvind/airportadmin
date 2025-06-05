@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/job-levels")
-@PreAuthorize("hasRole('Admin')")
 public class JobLevelController {
 
     private final JobLevelService jobLevelService;

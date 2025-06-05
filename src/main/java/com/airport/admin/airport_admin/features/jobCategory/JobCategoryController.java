@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/job-categories")
-@PreAuthorize("hasRole('Admin')")
 public class JobCategoryController {
 
     private final JobCategoryService jobCategoryService;

@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/job-roles")
-@PreAuthorize("hasRole('Admin')")
 public class JobRoleController {
 
     private final JobRoleService jobRoleService;

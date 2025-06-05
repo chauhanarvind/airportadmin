@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/constraint-profiles")
-@PreAuthorize("!hasAnyRole('Crew')")
+
 public class ConstraintProfileController {
 
     private final ConstraintProfileService constraintProfileService;

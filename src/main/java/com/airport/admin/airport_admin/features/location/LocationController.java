@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/locations")
-@PreAuthorize("!hasAnyRole('Crew')")
 public class LocationController {
 
     private final LocationService locationService;

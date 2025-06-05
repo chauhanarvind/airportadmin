@@ -24,7 +24,6 @@ public class StaffingRequestController {
 
     // 1. Submit a new staffing request
     @PostMapping("/submit")
-    @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<StaffingRequestResponseDto> submitRequest(
             @Valid @RequestBody StaffingRequestCreateDto dto
     ) {
@@ -34,7 +33,6 @@ public class StaffingRequestController {
 
     // 2. Get a specific request by ID (detailed view)
     @GetMapping("/{id}")
-    @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<StaffingRequestDetailDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(staffingRequestService.getRequestById(id));
     }
@@ -52,7 +50,6 @@ public class StaffingRequestController {
 
     // 4. Get filtered or paged requests
     @GetMapping("/")
-    @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<Page<StaffingRequestResponseDto>> getRequestsFiltered(
             @RequestParam Optional<Integer> page,
             @RequestParam Optional<Integer> size,
@@ -74,7 +71,6 @@ public class StaffingRequestController {
     }
 
     @GetMapping("/user/{managerId}")
-    @PreAuthorize("!hasRole('Crew')")
     public ResponseEntity<List<StaffingRequestResponseDto>> getByManagerId(@PathVariable Long managerId) {
         List<StaffingRequestResponseDto> requests = staffingRequestService.getRequestsByManagerId(managerId);
         return ResponseEntity.ok(requests);

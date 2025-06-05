@@ -2,6 +2,7 @@ package com.airport.admin.airport_admin.features.roster;
 
 import com.airport.admin.airport_admin.features.jobRole.JobRole;
 import com.airport.admin.airport_admin.features.location.Location;
+import com.airport.admin.airport_admin.features.staffing.model.StaffingRequest;
 import com.airport.admin.airport_admin.features.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -45,4 +46,9 @@ public class RosterAssignment {
 
 
     private boolean unassigned;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id", nullable = false)
+    private StaffingRequest request;
+
 }
