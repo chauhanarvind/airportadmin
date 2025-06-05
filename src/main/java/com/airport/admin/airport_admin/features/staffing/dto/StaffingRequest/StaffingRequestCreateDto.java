@@ -14,10 +14,10 @@ import java.util.List;
 @Setter
 public class StaffingRequestCreateDto {
 
-    @NotNull
+    @NotNull(message = "manager id is required")
     private Long managerId;
 
-    @NotNull
+    @NotNull(message = "location id is required")
     private Long locationId;
 
     private RequestType requestType = RequestType.REGULAR;
@@ -25,6 +25,6 @@ public class StaffingRequestCreateDto {
     private String reason;
 
     @Valid
-    @NotEmpty(message = "At least one day is required")
+    @NotEmpty(message = "at least one day is required")
     private List<StaffingRequestDayCreateDto> days;
 }

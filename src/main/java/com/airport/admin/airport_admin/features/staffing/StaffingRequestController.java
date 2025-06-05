@@ -17,6 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/staffing-requests")
+@PreAuthorize("!hasAnyRole('Crew')")
 public class StaffingRequestController {
 
     @Autowired
@@ -38,7 +39,7 @@ public class StaffingRequestController {
     }
 
     // 3. Approve/reject a request (Admin or Supervisor only)
-    @PutMapping("/{id}/status")
+    @PutMapping("/status/{id}")
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
             @RequestBody @Valid StaffingRequestUpdateDto updateDto
@@ -55,7 +56,7 @@ public class StaffingRequestController {
             @RequestParam Optional<Integer> size,
             @RequestParam Optional<Long> managerId,
             @RequestParam Optional<Long> locationId,
-            @RequestParam Optional<String> status
+            @RequestParam Optional<RosterStatus> status
     ) {
         Pageable pageable = PageRequest.of(
                 page.orElse(0),
@@ -70,6 +71,7 @@ public class StaffingRequestController {
         return ResponseEntity.ok(result);
     }
 
+    // the manager id can be admin or supervisor too.
     @GetMapping("/user/{managerId}")
     public ResponseEntity<List<StaffingRequestResponseDto>> getByManagerId(@PathVariable Long managerId) {
         List<StaffingRequestResponseDto> requests = staffingRequestService.getRequestsByManagerId(managerId);

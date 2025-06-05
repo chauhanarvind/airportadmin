@@ -10,6 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class StaffingRequestUpdateDto {
-    @NotNull
+    @NotNull(message = "status is required")
     private RosterStatus status;
 }

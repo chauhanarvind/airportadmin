@@ -3,8 +3,6 @@ package com.airport.admin.airport_admin.features.staffing;
 import com.airport.admin.airport_admin.ResourceNotFoundException;
 import com.airport.admin.airport_admin.enums.RosterStatus;
 import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequest.*;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestDay.*;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestItem.*;
 import com.airport.admin.airport_admin.features.staffing.model.StaffingRequest;
 import com.airport.admin.airport_admin.features.staffing.repository.StaffingRequestRepository;
 import jakarta.transaction.Transactional;
@@ -27,6 +25,7 @@ public class StaffingRequestService {
     private StaffingRequestMapper staffingRequestMapper;
 
     // 1. Submit a new staffing request
+    // transactional to reverse the query if unsuccessful
     @Transactional
     public StaffingRequestResponseDto submitRequest(StaffingRequestCreateDto dto) {
         StaffingRequest request = staffingRequestMapper.mapCreateDtoToEntity(dto);
@@ -61,7 +60,7 @@ public class StaffingRequestService {
     public Page<StaffingRequestResponseDto> getFilteredRequests(
             Optional<Long> managerId,
             Optional<Long> locationId,
-            Optional<String> status,
+            Optional<RosterStatus> status,
             Pageable pageable
     ) {
         Specification<StaffingRequest> spec = StaffingRequestSpecification.build(

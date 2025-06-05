@@ -11,19 +11,19 @@ import java.time.LocalTime;
 @Setter
 public class StaffingRequestItemCreateDto {
 
-    @NotNull
+    @NotNull(message = "job role is required")
     private Long jobRoleId;
 
-    @NotNull
+    @NotNull(message = "job level is required")
     private Long jobLevelId;
 
-    @NotNull
+    @NotNull(message = "required count is required")
     private Integer requiredCount;
 
-    @NotNull
+    @NotNull(message = "start time is required")
     private LocalTime startTime;
 
-    @NotNull
+    @NotNull(message = "end time is required")
     private LocalTime endTime;
 
 

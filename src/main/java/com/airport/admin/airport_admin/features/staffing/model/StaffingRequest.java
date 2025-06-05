@@ -13,6 +13,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+
+// Each Staffing request has multiple days...since each manager makes a weekly roster
 @Entity
 @Table(name = "staffing_requests")
 @Getter

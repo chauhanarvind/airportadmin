@@ -8,12 +8,13 @@ import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
+// query for filter
 public class StaffingRequestSpecification {
 
     public static Specification<StaffingRequest> build(
             Long managerId,
             Long locationId,
-            String status
+            RosterStatus status
     ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -27,7 +28,7 @@ public class StaffingRequestSpecification {
             }
 
             if (status != null) {
-                predicates.add(cb.equal(root.get("status"), RosterStatus.valueOf(status)));
+                predicates.add(cb.equal(root.get("status"), status));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

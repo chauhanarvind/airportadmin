@@ -1,5 +1,7 @@
 package com.airport.admin.airport_admin.features.user;
 
+import com.airport.admin.airport_admin.AvailabilityConflictException;
+import com.airport.admin.airport_admin.ResourceNotFoundException;
 import com.airport.admin.airport_admin.features.constraintProfile.ConstraintProfile;
 import com.airport.admin.airport_admin.features.constraintProfile.ConstraintProfileRepository;
 import com.airport.admin.airport_admin.features.jobLevel.JobLevel;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -36,7 +37,7 @@ public class UserService {
 
     public User createUser(CreateUserDto dto) {
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new AvailabilityConflictException("Email already exists");
         }
 
         Role role = resolveRole(dto.getRoleId());
@@ -52,23 +53,21 @@ public class UserService {
 
     public User updateUser(UpdateUserDto dto) {
         User user = userRepository.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("User does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("User does not exist"));
 
         Role role = resolveRole(dto.getRoleId());
         JobLevel jobLevel = resolveJobLevel(dto.getJobLevelId());
         JobRole jobRole = resolveJobRole(dto.getJobRoleId());
         ConstraintProfile profile = resolveConstraintProfile(dto.getConstraintProfileId());
 
-        // No password update here since it's not part of the DTO
         userMapper.updateEntity(user, dto, role, jobRole, jobLevel, profile);
 
         return userRepository.save(user);
     }
 
-
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User does not exist");
+            throw new ResourceNotFoundException("User does not exist");
         }
         userRepository.deleteById(id);
     }
@@ -77,38 +76,35 @@ public class UserService {
         return userRepository.findAll(pageable);
     }
 
-
     public Optional<User> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public User findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
 
     // --- Helper Methods ---
 
     private Role resolveRole(Long roleId) {
         return roleRepository.findById(roleId)
-                .orElseThrow(() -> new RuntimeException("User role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User role not found"));
     }
 
     private JobRole resolveJobRole(Long jobRoleId) {
         return jobRoleRepository.findById(jobRoleId)
-                .orElseThrow(() -> new RuntimeException("Job role does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job role does not exist"));
     }
 
     private JobLevel resolveJobLevel(Long jobLevelId) {
         return jobLevelRepository.findById(jobLevelId)
-                .orElseThrow(() -> new RuntimeException("Job level not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job level not found"));
     }
 
     private ConstraintProfile resolveConstraintProfile(Long profileId) {
         if (profileId == null) return null;
         return constraintProfileRepository.findById(profileId)
-                .orElseThrow(() -> new RuntimeException("Constraint profile not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Constraint profile not found"));
     }
-
-    public User findUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-    }
-
-
 }

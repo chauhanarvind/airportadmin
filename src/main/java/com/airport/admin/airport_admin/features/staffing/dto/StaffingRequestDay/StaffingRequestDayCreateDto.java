@@ -10,14 +10,13 @@ import java.time.LocalDate;
 import java.util.List;
 import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestItem.StaffingRequestItemCreateDto;
 
-
 @Getter
 @Setter
 public class StaffingRequestDayCreateDto {
 
-    @NotNull(message = "Date is required")
+    @NotNull(message = "date is required")
     private LocalDate date;
 
-    @NotEmpty(message = "At least one item is required")
+    @NotEmpty(message = "at least one item is required")
     private List<@Valid StaffingRequestItemCreateDto> items;
 }

@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
+// each day has multiple items
 @Entity
 @Table(name = "staffing_request_days")
 @Getter

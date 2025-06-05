@@ -14,7 +14,4 @@ public interface StaffingRequestRepository
 
     List<StaffingRequest> findByManagerId(Long id);
 
-    List<StaffingRequest> findAllByOrderByCreatedAtDesc();
-
-    Page<StaffingRequest> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }
