@@ -3,7 +3,7 @@ package com.airport.admin.airport_admin.features.Auth;
 import com.airport.admin.airport_admin.features.Auth.dto.AuthRequest;
 import com.airport.admin.airport_admin.features.Auth.dto.AuthResponse;
 import com.airport.admin.airport_admin.security.JwtTokenProvider;
-import com.airport.admin.airport_admin.features.user.UserService;
+import com.airport.admin.airport_admin.features.Admin.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,6 +1,6 @@
 package com.airport.admin.airport_admin.security;
 
-import com.airport.admin.airport_admin.features.user.User;
+import com.airport.admin.airport_admin.features.Admin.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
