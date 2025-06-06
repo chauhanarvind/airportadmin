@@ -1,9 +1,11 @@
 package com.airport.admin.airport_admin.features.staff.roster;
 
+import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.roster.service.RosterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,14 +40,14 @@ public class RosterAssignmentController {
         return ResponseEntity.ok("Roster generated successfully.");
     }
 
-    // Admin: Check if roster already exists for a request...this is used during generate roster
+    // Admin: Check if roster already exists for a request
     @GetMapping("/check/{requestId}")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<Boolean> checkIfRosterExists(@PathVariable Long requestId) {
         return ResponseEntity.ok(rosterService.rosterExistsForRequest(requestId));
     }
 
-    // Admin: View roster assignments for a request (shows the detail)
+    // Admin: View roster assignments for a request
     @GetMapping("/view/{requestId}")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<List<RosterAssignmentDto>> getRosterForRequest(@PathVariable Long requestId) {
@@ -54,7 +56,7 @@ public class RosterAssignmentController {
         return ResponseEntity.ok(dtoList);
     }
 
-    // Admin: Regenerate the roster (delete existing and re-generate)
+    // Admin: Regenerate the roster
     @PostMapping("/regenerate/{requestId}")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> regenerateRoster(@PathVariable Long requestId) {
@@ -63,11 +65,13 @@ public class RosterAssignmentController {
         return ResponseEntity.ok("Roster regenerated successfully.");
     }
 
-    // User/Admin: View personal roster
-    @GetMapping("/my/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id or hasRole('Admin')")
-    public ResponseEntity<List<RosterAssignmentDto>> getRosterForUser(@PathVariable Long userId) {
-        var assignments = rosterAssignmentRepository.findByUserIdOrderByDateAscStartTimeAsc(userId);
+    // User/Admin: View personal roster (secure user-based access)
+    @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<RosterAssignmentDto>> getRosterForUser(
+            @AuthenticationPrincipal User user
+    ) {
+        var assignments = rosterAssignmentRepository.findByUserIdOrderByDateAscStartTimeAsc(user.getId());
         var dtoList = rosterAssignmentMapper.mapToDtoList(assignments);
         return ResponseEntity.ok(dtoList);
     }

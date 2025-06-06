@@ -34,8 +34,8 @@ public class StaffingRequestService {
     // 1. Submit a new staffing request
     // transactional to reverse the query if unsuccessful
     @Transactional
-    public StaffingRequestResponseDto submitRequest(StaffingRequestCreateDto dto) {
-        StaffingRequest request = staffingRequestMapper.mapCreateDtoToEntity(dto);
+    public StaffingRequestResponseDto submitRequest(Long managerId, StaffingRequestCreateDto dto) {
+        StaffingRequest request = staffingRequestMapper.mapCreateDtoToEntity(managerId, dto);
         StaffingRequest saved = staffingRequestRepository.save(request);
         return staffingRequestMapper.toResponseDto(saved);
     }

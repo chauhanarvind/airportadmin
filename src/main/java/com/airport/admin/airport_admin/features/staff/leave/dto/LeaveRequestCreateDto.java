@@ -17,8 +17,9 @@ public class LeaveRequestCreateDto {
     @NotNull(message = "End date is required")
     private LocalDate endDate;
 
-    @NotNull(message = "User ID is required")
-    private Long userId;
+    //will be using authentication principal to get user id
+//    @NotNull(message = "User ID is required")
+//    private Long userId;
 
     @NotBlank(message = "Reason is required")
     private String reason;

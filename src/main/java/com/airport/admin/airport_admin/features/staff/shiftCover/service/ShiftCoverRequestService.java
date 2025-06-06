@@ -1,16 +1,16 @@
 package com.airport.admin.airport_admin.features.staff.shiftCover.service;
 
-import com.airport.admin.airport_admin.utils.SecurityUtils;
 import com.airport.admin.airport_admin.enums.CoverRequestStatus;
+import com.airport.admin.airport_admin.features.Admin.user.User;
+import com.airport.admin.airport_admin.features.Admin.user.UserRepository;
 import com.airport.admin.airport_admin.features.staff.roster.RosterAssignmentRepository;
 import com.airport.admin.airport_admin.features.staff.shiftCover.ShiftCoverRequest;
 import com.airport.admin.airport_admin.features.staff.shiftCover.ShiftCoverRequestMapper;
 import com.airport.admin.airport_admin.features.staff.shiftCover.ShiftCoverRequestRepository;
+import com.airport.admin.airport_admin.features.staff.shiftCover.ShiftCoverRequestSpecification;
 import com.airport.admin.airport_admin.features.staff.shiftCover.dto.CoverEligibilityCheckDto;
-import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverRequestDto;
+import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverRequestCreateDto;
 import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverResponseDto;
-import com.airport.admin.airport_admin.features.Admin.user.User;
-import com.airport.admin.airport_admin.features.Admin.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,9 +30,9 @@ public class ShiftCoverRequestService {
     private final CoverEligibilityService coverEligibilityService;
     private final RosterAssignmentRepository rosterRepo;
 
-    // Submit new shift cover request
-    public ShiftCoverResponseDto submitCoverRequest(ShiftCoverRequestDto dto) {
-        User originalUser = userRepo.findById(dto.getOriginalUserId())
+    // ✅ Submit new shift cover request securely
+    public ShiftCoverResponseDto submitCoverRequest(Long originalUserId, ShiftCoverRequestCreateDto dto) {
+        User originalUser = userRepo.findById(originalUserId)
                 .orElseThrow(() -> new RuntimeException("Original user not found"));
         User coveringUser = userRepo.findById(dto.getCoveringUserId())
                 .orElseThrow(() -> new RuntimeException("Covering user not found"));
@@ -46,7 +46,6 @@ public class ShiftCoverRequestService {
         return mapper.toResponseDto(saved);
     }
 
-    // Get all cover requests
     public Page<ShiftCoverResponseDto> getFilteredRequests(
             Long originalUserId,
             Long coveringUserId,
@@ -62,12 +61,10 @@ public class ShiftCoverRequestService {
                 .map(mapper::toResponseDto);
     }
 
-    // Get only pending cover requests
     public List<ShiftCoverResponseDto> getPendingRequests() {
         return mapper.toResponseDtoList(requestRepo.findByStatus(CoverRequestStatus.PENDING));
     }
 
-    // Get all requests for a user
     public List<ShiftCoverResponseDto> getAllUserCoverRequests(Long userId) {
         List<ShiftCoverRequest> requests = requestRepo.findByOriginalUserId(userId);
         return mapper.toResponseDtoList(requests);
@@ -75,18 +72,12 @@ public class ShiftCoverRequestService {
 
     public ShiftCoverResponseDto getCoverRequestById(Long id) {
         ShiftCoverRequest request = requestRepo.findById(id)
-                .orElseThrow(()-> new RuntimeException("Request cover not found"));
+                .orElseThrow(() -> new RuntimeException("Request cover not found"));
         return mapper.toResponseDto(request);
     }
 
-    // Check warnings before submitting (via DTO)
+    // ✅ Safe: user identity is validated against session
     public List<String> getApprovalWarnings(CoverEligibilityCheckDto dto) {
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-
-        if (!dto.getOriginalUserId().equals(currentUserId)) {
-            throw new SecurityException("You are not authorized to check warnings for another user.");
-        }
-
         User user = userRepo.findById(dto.getCoveringUserId())
                 .orElseThrow(() -> new RuntimeException("Covering user not found"));
 
@@ -98,8 +89,6 @@ public class ShiftCoverRequestService {
         );
     }
 
-
-    // Check warnings for an existing request (admin view)
     public List<String> getApprovalWarnings(Long requestId) {
         ShiftCoverRequest request = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
@@ -112,7 +101,6 @@ public class ShiftCoverRequestService {
         );
     }
 
-    // Approve a request and reassign shift
     public void approveRequest(Long requestId) {
         ShiftCoverRequest request = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
@@ -133,7 +121,6 @@ public class ShiftCoverRequestService {
         requestRepo.save(request);
     }
 
-    // Reject a request
     public void rejectRequest(Long requestId) {
         ShiftCoverRequest request = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
@@ -142,7 +129,6 @@ public class ShiftCoverRequestService {
         requestRepo.save(request);
     }
 
-    // Cancel a request
     public void cancelRequest(Long requestId) {
         ShiftCoverRequest request = requestRepo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
@@ -154,6 +140,4 @@ public class ShiftCoverRequestService {
         request.setStatus(CoverRequestStatus.CANCELLED);
         requestRepo.save(request);
     }
-
-
 }

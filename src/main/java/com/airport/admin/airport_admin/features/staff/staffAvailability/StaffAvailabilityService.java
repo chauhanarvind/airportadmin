@@ -2,6 +2,7 @@ package com.airport.admin.airport_admin.features.staff.staffAvailability;
 
 
 import com.airport.admin.airport_admin.utils.AvailabilityConflictException;
+import com.airport.admin.airport_admin.utils.InvalidShiftException;
 import com.airport.admin.airport_admin.utils.ResourceNotFoundException;
 import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.features.staff.leave.LeaveRequestRepository;
@@ -33,47 +34,36 @@ public class StaffAvailabilityService {
         this.leaveRequestRepository = leaveRequestRepository;
     }
 
-    public StaffAvailabilityResponseDto saveAvailability(StaffAvailabilityRequestDto dto) {
-        User user = getUserOrThrow(dto.getUserId());
+    public StaffAvailabilityResponseDto saveAvailability(Long userId, StaffAvailabilityRequestDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Block if user is already on approved leave on this date
-        boolean onLeave = leaveRequestRepository
-                .existsByUserIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        dto.getUserId(),
-                        LeaveStatus.APPROVED,
-                        dto.getDate(),
-                        dto.getDate()
-                );
+        // Check if availability already exists for that date
+        StaffAvailability existing = availabilityRepository.findByUserIdAndDate(userId, dto.getDate())
+                .orElse(null);
 
+        StaffAvailability entity;
 
-        if (onLeave) {
-            throw new AvailabilityConflictException("User is on approved leave for this date and cannot set availability.");
+        if (existing != null) {
+            // Update existing record
+            existing.setAvailable(dto.getIsAvailable());
+            existing.setUnavailableFrom(dto.getUnavailableFrom());
+            existing.setUnavailableTo(dto.getUnavailableTo());
+            entity = existing;
+        } else {
+            // Create new record
+            entity = new StaffAvailability();
+            entity.setUser(user);
+            entity.setDate(dto.getDate());
+            entity.setAvailable(dto.getIsAvailable());
+            entity.setUnavailableFrom(dto.getUnavailableFrom());
+            entity.setUnavailableTo(dto.getUnavailableTo());
         }
 
-        // Validate time fields if available
-        if (Boolean.TRUE.equals(dto.getIsAvailable())) {
-            LocalTime from = dto.getUnavailableFrom();
-            LocalTime to = dto.getUnavailableTo();
-
-            if ((from == null) != (to == null)) {
-                throw new AvailabilityConflictException("Both unavailableFrom and unavailableTo must be set if one is provided.");
-            }
-
-            if (from != null && from.isAfter(to)) {
-                throw new AvailabilityConflictException("unavailableFrom must be before unavailableTo.");
-            }
-        }
-
-        // Create or update availability
-        StaffAvailability availability = availabilityRepository
-                .findByUserIdAndDate(dto.getUserId(), dto.getDate())
-                .orElseGet(StaffAvailability::new);
-
-        StaffAvailabilityMapper.updateEntity(availability, dto, user);
-        availability = availabilityRepository.save(availability);
-
-        return StaffAvailabilityMapper.toDto(availability);
+        StaffAvailability saved = availabilityRepository.save(entity);
+        return StaffAvailabilityMapper.toDto(saved);
     }
+
 
     public List<StaffAvailabilityResponseDto> getAvailabilityByUser(Long userId) {
         List<StaffAvailability> entries = availabilityRepository.findByUserId(userId);

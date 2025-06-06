@@ -17,10 +17,7 @@ import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingReque
 import com.airport.admin.airport_admin.features.staff.staffing.model.StaffingRequest;
 import com.airport.admin.airport_admin.features.staff.staffing.model.StaffingRequestDay;
 import com.airport.admin.airport_admin.features.staff.staffing.model.StaffingRequestItem;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequest.*;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestDay.*;
-import com.airport.admin.airport_admin.features.staffing.dto.StaffingRequestItem.*;
-import com.airport.admin.airport_admin.features.staffing.model.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,8 +34,8 @@ public class StaffingRequestMapper {
     @Autowired private JobLevelRepository jobLevelRepository;
 
     // 1. Convert Create DTO to Entity
-    public StaffingRequest mapCreateDtoToEntity(StaffingRequestCreateDto dto) {
-        User manager = userRepository.findById(dto.getManagerId())
+    public StaffingRequest mapCreateDtoToEntity(Long managerId,StaffingRequestCreateDto dto) {
+        User manager = userRepository.findById(managerId)
                 .orElseThrow(() -> new RuntimeException("Manager not found"));
         Location location = locationRepository.findById(dto.getLocationId())
                 .orElseThrow(() -> new RuntimeException("Location not found"));

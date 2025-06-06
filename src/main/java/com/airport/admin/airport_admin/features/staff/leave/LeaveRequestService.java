@@ -7,12 +7,11 @@ import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestCrea
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestGetDto;
 import com.airport.admin.airport_admin.utils.AvailabilityConflictException;
 import com.airport.admin.airport_admin.utils.ResourceNotFoundException;
-import jakarta.persistence.criteria.Predicate;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,8 +28,9 @@ public class LeaveRequestService {
         this.userRepository = userRepository;
     }
 
-    public LeaveRequestGetDto applyLeave(LeaveRequestCreateDto dto) {
-        User user = getUserOrThrow(dto.getUserId());
+    // Authenticated user applies for leave
+    public LeaveRequestGetDto applyLeave(Long userId, LeaveRequestCreateDto dto) {
+        User user = getUserOrThrow(userId);
         LeaveRequest leave = LeaveRequestMapper.toEntity(dto, user);
         leave.setStatus(LeaveStatus.PENDING);
         leave = leaveRequestRepository.save(leave);
@@ -49,11 +49,9 @@ public class LeaveRequestService {
 
     public Page<LeaveRequestGetDto> getFilteredLeaves(Long userId, LeaveStatus status, Pageable pageable) {
         Specification<LeaveRequest> spec = LeaveRequestSpecification.build(userId, status);
-
         return leaveRequestRepository.findAll(spec, pageable)
                 .map(LeaveRequestMapper::toDto);
     }
-
 
     public LeaveRequestGetDto updateLeaveStatus(Long leaveId, LeaveStatus status) {
         LeaveRequest leave = getLeaveOrThrow(leaveId);
@@ -74,11 +72,16 @@ public class LeaveRequestService {
         return LeaveRequestMapper.toDto(leave);
     }
 
-    public LeaveRequestGetDto resubmitLeave(Long leaveId, LeaveRequestCreateDto dto) {
+    public LeaveRequestGetDto resubmitLeave(Long userId, Long leaveId, LeaveRequestCreateDto dto) {
         LeaveRequest leave = getLeaveOrThrow(leaveId);
 
         if (!(leave.getStatus() == LeaveStatus.REJECTED || leave.getStatus() == LeaveStatus.CANCELLED)) {
             throw new AvailabilityConflictException("Only rejected or cancelled leaves can be resubmitted");
+        }
+
+        // Optional safety check: ensure user owns the leave being resubmitted
+        if (!leave.getUser().getId().equals(userId)) {
+            throw new AvailabilityConflictException("You cannot resubmit someone else's leave request");
         }
 
         leave.setStartDate(dto.getStartDate());

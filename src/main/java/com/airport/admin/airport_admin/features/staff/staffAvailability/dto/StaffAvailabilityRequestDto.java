@@ -13,8 +13,9 @@ import java.time.LocalTime;
 @ValidTimeRange
 public class StaffAvailabilityRequestDto {
 
-    @NotNull(message = "user id is required")
-    private Long userId;
+    // will be using authentication principal to get user id
+//    @NotNull(message = "user id is required")
+//    private Long userId;
 
     @NotNull(message = "date is required")
     private LocalDate date;

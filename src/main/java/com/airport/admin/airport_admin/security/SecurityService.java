@@ -15,10 +15,25 @@ public class SecurityService {
     }
 
     public boolean isOwner(Long userId, Authentication authentication) {
-        return authentication != null &&
-                authentication.getPrincipal() instanceof User &&
-                ((User) authentication.getPrincipal()).getId().equals(userId);
+        if (authentication == null) {
+            System.out.println("Authentication is null");
+            return false;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof User)) {
+            System.out.println("Principal is not of type User: " + principal.getClass().getName());
+            return false;
+        }
+
+        Long authUserId = ((User) principal).getId();
+        System.out.println("Checking isOwner:");
+        System.out.println(" - Requested userId: " + userId);
+        System.out.println(" - Authenticated userId: " + authUserId);
+
+        return authUserId.equals(userId);
     }
+
 
     public boolean isAdmin(Authentication authentication) {
         return authentication != null &&

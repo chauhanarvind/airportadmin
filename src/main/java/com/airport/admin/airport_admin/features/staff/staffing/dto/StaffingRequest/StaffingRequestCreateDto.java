@@ -14,8 +14,9 @@ import java.util.List;
 @Setter
 public class StaffingRequestCreateDto {
 
-    @NotNull(message = "manager id is required")
-    private Long managerId;
+    //not needed, using authentication principal
+//    @NotNull(message = "manager id is required")
+//    private Long managerId;
 
     @NotNull(message = "location id is required")
     private Long locationId;

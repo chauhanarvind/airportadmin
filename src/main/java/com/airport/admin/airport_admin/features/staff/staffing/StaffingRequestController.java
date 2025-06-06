@@ -1,18 +1,17 @@
 package com.airport.admin.airport_admin.features.staff.staffing;
 
 import com.airport.admin.airport_admin.enums.RosterStatus;
+import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestCreateDto;
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestDetailDto;
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestResponseDto;
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestUpdateDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/staffing-requests")
-@PreAuthorize("!hasAnyRole('Crew')") // can be accessed by anyone except crew
+@PreAuthorize("!hasAnyRole('Crew')")
 public class StaffingRequestController {
 
     @Autowired
@@ -29,9 +28,10 @@ public class StaffingRequestController {
     // 1. Submit a new staffing request
     @PostMapping("/submit")
     public ResponseEntity<StaffingRequestResponseDto> submitRequest(
-            @Valid @RequestBody StaffingRequestCreateDto dto
+            @Valid @RequestBody StaffingRequestCreateDto dto,
+            @AuthenticationPrincipal User user
     ) {
-        StaffingRequestResponseDto response = staffingRequestService.submitRequest(dto);
+        StaffingRequestResponseDto response = staffingRequestService.submitRequest(user.getId(), dto);
         return ResponseEntity.ok(response);
     }
 
@@ -43,7 +43,7 @@ public class StaffingRequestController {
 
     // 3. Approve/reject a request (Admin only)
     @PutMapping("/status/{id}")
-    @PreAuthorize("hasRole('Admin')") //can be updated only by admin
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long id,
             @RequestBody @Valid StaffingRequestUpdateDto updateDto
@@ -51,7 +51,6 @@ public class StaffingRequestController {
         staffingRequestService.updateStatus(id, updateDto.getStatus());
         return ResponseEntity.ok().build();
     }
-
 
     // 4. Get filtered or paged requests
     @GetMapping("/")
@@ -75,12 +74,11 @@ public class StaffingRequestController {
         return ResponseEntity.ok(result);
     }
 
-    // the manager id can be admin or supervisor too.
+    // 5. Get all requests submitted by a manager (self or admin)
     @GetMapping("/user/{managerId}")
-    @PreAuthorize("#managerId == authentication.principal.id or hasRole('Admin')") // can be accessed only if the data belongs to that user or if the user is admin
+    @PreAuthorize("#managerId == authentication.principal.id or hasRole('Admin')")
     public ResponseEntity<List<StaffingRequestResponseDto>> getByManagerId(@PathVariable Long managerId) {
         List<StaffingRequestResponseDto> requests = staffingRequestService.getRequestsByManagerId(managerId);
         return ResponseEntity.ok(requests);
     }
-
 }

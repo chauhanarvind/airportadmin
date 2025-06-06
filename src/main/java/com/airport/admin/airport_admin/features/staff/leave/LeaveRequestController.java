@@ -1,6 +1,7 @@
 package com.airport.admin.airport_admin.features.staff.leave;
 
 import com.airport.admin.airport_admin.enums.LeaveStatus;
+import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestCreateDto;
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestGetDto;
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestUpdateDto;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,9 +27,12 @@ public class LeaveRequestController {
 
     // User: Apply for leave
     @PostMapping("/apply")
-    @PreAuthorize("@securityService.isOwner(#dto.userId, authentication)") //only for the owner
-    public ResponseEntity<LeaveRequestGetDto> applyLeave(@Valid @RequestBody LeaveRequestCreateDto dto) {
-        return ResponseEntity.ok(leaveRequestService.applyLeave(dto));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<LeaveRequestGetDto> applyLeave(
+            @Valid @RequestBody LeaveRequestCreateDto dto,
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(leaveRequestService.applyLeave(user.getId(), dto));
     }
 
     // View leave by ID (owner or admin)
@@ -77,8 +82,9 @@ public class LeaveRequestController {
     @PreAuthorize("@leaveSecurity.canView(#id, authentication)")
     public ResponseEntity<LeaveRequestGetDto> resubmitLeave(
             @PathVariable Long id,
-            @Valid @RequestBody LeaveRequestCreateDto dto
+            @Valid @RequestBody LeaveRequestCreateDto dto,
+            @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(leaveRequestService.resubmitLeave(id, dto));
+        return ResponseEntity.ok(leaveRequestService.resubmitLeave(user.getId(), id, dto));
     }
 }

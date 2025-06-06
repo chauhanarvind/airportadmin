@@ -1,5 +1,6 @@
 package com.airport.admin.airport_admin.features.staff.staffAvailability;
 
+import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.staffAvailability.dto.StaffAvailabilityRequestDto;
 import com.airport.admin.airport_admin.features.staff.staffAvailability.dto.StaffAvailabilityResponseDto;
 import jakarta.validation.Valid;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -33,33 +35,31 @@ public class StaffAvailabilityController {
         return ResponseEntity.ok(page);
     }
 
-
-
-    // Create or update availability for a user
+    // Create or update availability for the logged-in user
     @PostMapping
-    @PreAuthorize("#dto.userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<StaffAvailabilityResponseDto> saveAvailability(
-            @Valid @RequestBody StaffAvailabilityRequestDto dto
+            @Valid @RequestBody StaffAvailabilityRequestDto dto,
+            @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(staffAvailabilityService.saveAvailability(dto));
+        return ResponseEntity.ok(staffAvailabilityService.saveAvailability(user.getId(), dto));
     }
 
-    // Get all availability entries for a user
+    // Get all availability entries for a user (ownership check)
     @GetMapping("/user/{userId}")
     @PreAuthorize("#userId == authentication.principal.id")
     public ResponseEntity<List<StaffAvailabilityResponseDto>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(staffAvailabilityService.getAvailabilityByUser(userId));
     }
 
-
-    // Get single availability entry by ID
+    // Get a single availability entry
     @GetMapping("/{id}")
-    @PreAuthorize("@availabilitySecurity.canView(#id, authentication) or hasRole('Admin')") //can only be viewed by the authenticated user or admin
+    @PreAuthorize("@availabilitySecurity.canView(#id, authentication) or hasRole('Admin')")
     public ResponseEntity<StaffAvailabilityResponseDto> getById(@PathVariable Long id) {
         return ResponseEntity.ok(staffAvailabilityService.getById(id));
     }
 
-    // Delete an entry
+    // Delete an entry (owner or admin)
     @DeleteMapping("/{id}")
     @PreAuthorize("@availabilitySecurity.canModify(#id, authentication) or hasRole('Admin')")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {

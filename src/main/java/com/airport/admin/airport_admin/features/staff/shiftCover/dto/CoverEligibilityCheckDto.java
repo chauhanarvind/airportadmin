@@ -8,10 +8,9 @@ import java.time.LocalTime;
 
 @Getter
 public class CoverEligibilityCheckDto {
-    private Long originalUserId;
+//    private Long originalUserId; will be using authentication principal
     private Long coveringUserId;
     private LocalDate shiftDate;
     private LocalTime startTime;
     private LocalTime endTime;
-
 }
