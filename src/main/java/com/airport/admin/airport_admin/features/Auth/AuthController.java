@@ -1,6 +1,7 @@
 package com.airport.admin.airport_admin.features.Auth;
 
 import com.airport.admin.airport_admin.features.Auth.dto.AuthRequest;
+import com.airport.admin.airport_admin.security.CustomUserDetails;
 import com.airport.admin.airport_admin.security.JwtTokenProvider;
 import com.airport.admin.airport_admin.features.Admin.user.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,11 +15,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.HttpHeaders;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -28,8 +30,44 @@ public class AuthController {
                           UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenProvider = jwtTokenProvider;
-        this.userService = userService;
+
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Not authenticated");
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String fullRole = userDetails.getAuthorities().iterator().next().getAuthority();
+        String cleanRole = fullRole.replace("ROLE_", "");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", userDetails.getId());
+        response.put("email", userDetails.getUsername());
+        response.put("role", cleanRole);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie deleteCookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.setHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+        return ResponseEntity.ok("Logged out");
+    }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest, HttpServletResponse response) {
