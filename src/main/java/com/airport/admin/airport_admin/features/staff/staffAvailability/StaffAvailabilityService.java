@@ -34,35 +34,47 @@ public class StaffAvailabilityService {
         this.leaveRequestRepository = leaveRequestRepository;
     }
 
-    public StaffAvailabilityResponseDto saveAvailability(Long userId, StaffAvailabilityRequestDto dto) {
+    public StaffAvailabilityResponseDto updateAvailability(Long id,Long userId, StaffAvailabilityRequestDto dto) {
+        StaffAvailability existing = availabilityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Availability not found"));
+
+        // Prevent duplicate entry for same user and date
+        boolean exists = availabilityRepository.existsByUserIdAndDate(userId, dto.getDate());
+        if (exists) {
+            throw new AvailabilityConflictException("Availability already exists for this date.");
+        }
+        existing.setDate(dto.getDate());
+        existing.setAvailable(dto.getIsAvailable());
+        existing.setUnavailableFrom(dto.getUnavailableFrom());
+        existing.setUnavailableTo(dto.getUnavailableTo());
+
+        StaffAvailability updated = availabilityRepository.save(existing);
+        return StaffAvailabilityMapper.toDto(updated);
+    }
+
+
+
+    public StaffAvailabilityResponseDto createAvailability(Long userId, StaffAvailabilityRequestDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Check if availability already exists for that date
-        StaffAvailability existing = availabilityRepository.findByUserIdAndDate(userId, dto.getDate())
-                .orElse(null);
-
-        StaffAvailability entity;
-
-        if (existing != null) {
-            // Update existing record
-            existing.setAvailable(dto.getIsAvailable());
-            existing.setUnavailableFrom(dto.getUnavailableFrom());
-            existing.setUnavailableTo(dto.getUnavailableTo());
-            entity = existing;
-        } else {
-            // Create new record
-            entity = new StaffAvailability();
-            entity.setUser(user);
-            entity.setDate(dto.getDate());
-            entity.setAvailable(dto.getIsAvailable());
-            entity.setUnavailableFrom(dto.getUnavailableFrom());
-            entity.setUnavailableTo(dto.getUnavailableTo());
+        // Prevent duplicate entry for same user and date
+        boolean exists = availabilityRepository.existsByUserIdAndDate(userId, dto.getDate());
+        if (exists) {
+            throw new AvailabilityConflictException("Availability already exists for this date.");
         }
+
+        StaffAvailability entity = new StaffAvailability();
+        entity.setUser(user);
+        entity.setDate(dto.getDate());
+        entity.setAvailable(dto.getIsAvailable());
+        entity.setUnavailableFrom(dto.getUnavailableFrom());
+        entity.setUnavailableTo(dto.getUnavailableTo());
 
         StaffAvailability saved = availabilityRepository.save(entity);
         return StaffAvailabilityMapper.toDto(saved);
     }
+
 
 
     public List<StaffAvailabilityResponseDto> getAvailabilityByUser(Long userId) {

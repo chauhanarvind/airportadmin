@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/job-levels")
-@PreAuthorize("hasRole('Admin')") //can only be accessed by admin
+@RequestMapping("/api/job-levels") //can only be accessed by admin
 public class JobLevelController {
 
     private final JobLevelService jobLevelService;
@@ -33,6 +32,7 @@ public class JobLevelController {
     }
 
     // to create
+    @PreAuthorize("hasRole('Admin')")
     @PostMapping("/create")
     public ResponseEntity<JobLevelResponseDto> createJobLevel(
             @Valid @RequestBody JobLevelRequestDto dto
@@ -42,6 +42,7 @@ public class JobLevelController {
 
 
     //to update by ud
+    @PreAuthorize("hasRole('Admin')")
     @PutMapping("/{id}")
     public ResponseEntity<JobLevelResponseDto> updateJobLevel(
             @PathVariable Long id,
@@ -51,6 +52,7 @@ public class JobLevelController {
     }
 
     // to delete by id
+    @PreAuthorize("hasRole('Admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteJobLevel(@PathVariable Long id) {
         jobLevelService.deleteJobLevel(id);

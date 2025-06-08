@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/constraint-profiles")
-@PreAuthorize("hasRole('Admin')") //can only be accessed by admin
+@RequestMapping("/api/constraint-profiles") //can only be accessed by admin
 public class ConstraintProfileController {
 
     private final ConstraintProfileService constraintProfileService;
@@ -33,6 +32,7 @@ public class ConstraintProfileController {
     }
 
     // to create
+    @PreAuthorize("hasRole('Admin')")
     @PostMapping("/create")
     public ResponseEntity<ConstraintProfileResponseDto> createProfile(
             @Valid @RequestBody ConstraintProfileRequestDto dto
@@ -41,6 +41,7 @@ public class ConstraintProfileController {
     }
 
     //to update by id
+    @PreAuthorize("hasRole('Admin')")
     @PutMapping("/{id}")
     public ResponseEntity<ConstraintProfileResponseDto> updateProfile(
             @PathVariable Long id,
@@ -50,6 +51,7 @@ public class ConstraintProfileController {
     }
 
     // to delete
+    @PreAuthorize("hasRole('Admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProfile(@PathVariable Long id) {
         constraintProfileService.deleteProfile(id);

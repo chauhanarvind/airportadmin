@@ -2,6 +2,8 @@ package com.airport.admin.airport_admin.features.staff.roster;
 
 import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.roster.service.RosterService;
+import com.airport.admin.airport_admin.security.SecurityService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,21 +14,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/roster")
+@RequiredArgsConstructor
 public class RosterAssignmentController {
 
     private final RosterService rosterService;
     private final RosterAssignmentRepository rosterAssignmentRepository;
+    private final SecurityService securityService;
 
     @Autowired
     private RosterAssignmentMapper rosterAssignmentMapper;
 
-    public RosterAssignmentController(
-            RosterService rosterService,
-            RosterAssignmentRepository rosterAssignmentRepository
-    ) {
-        this.rosterService = rosterService;
-        this.rosterAssignmentRepository = rosterAssignmentRepository;
-    }
+
 
     // Admin: Generate roster for a request
     @PostMapping("/generate/{requestId}")
@@ -47,14 +45,23 @@ public class RosterAssignmentController {
         return ResponseEntity.ok(rosterService.rosterExistsForRequest(requestId));
     }
 
-    // Admin: View roster assignments for a request
+    // View roster assignments for a request
     @GetMapping("/view/{requestId}")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasAnyRole('Admin', 'Manager', 'Supervisor')")
     public ResponseEntity<List<RosterAssignmentDto>> getRosterForRequest(@PathVariable Long requestId) {
+        Long currentUserId = securityService.getAuthenticatedUserId(); // safe, consistent
+        boolean isAdmin = securityService.hasRole("Admin");
+
+        if (!isAdmin && !rosterService.isRequestOwnedByUser(requestId, currentUserId)) {
+            return ResponseEntity.status(403).build();
+        }
+
         var assignments = rosterService.getRosterAssignmentsForRequest(requestId);
         var dtoList = rosterAssignmentMapper.mapToDtoList(assignments);
         return ResponseEntity.ok(dtoList);
     }
+
+
 
     // Admin: Regenerate the roster
     @PostMapping("/regenerate/{requestId}")
@@ -68,11 +75,11 @@ public class RosterAssignmentController {
     // User/Admin: View personal roster (secure user-based access)
     @GetMapping("/my")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<RosterAssignmentDto>> getRosterForUser(
-            @AuthenticationPrincipal User user
-    ) {
-        var assignments = rosterAssignmentRepository.findByUserIdOrderByDateAscStartTimeAsc(user.getId());
+    public ResponseEntity<List<RosterAssignmentDto>> getRosterForUser() {
+        Long userId = securityService.getAuthenticatedUserId(); // Extracts from SecurityContext
+        var assignments = rosterAssignmentRepository.findByUserIdOrderByDateAscStartTimeAsc(userId);
         var dtoList = rosterAssignmentMapper.mapToDtoList(assignments);
         return ResponseEntity.ok(dtoList);
     }
+
 }

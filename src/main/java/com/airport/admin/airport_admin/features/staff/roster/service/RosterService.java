@@ -130,4 +130,11 @@ public class RosterService {
             throw new InvalidShiftException("Invalid shift timings");
         }
     }
+
+    public boolean isRequestOwnedByUser(Long requestId, Long userId) {
+        return staffingRequestRepository.findById(requestId)
+                .map(req -> req.getManager().getId().equals(userId))
+                .orElse(false);
+    }
+
 }

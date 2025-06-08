@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/job-categories")
-@PreAuthorize("hasRole('Admin')") //can only be accessed by admin
+@RequestMapping("/api/job-categories")//can only be accessed by admin
 public class JobCategoryController {
 
     private final JobCategoryService jobCategoryService;
@@ -21,6 +20,7 @@ public class JobCategoryController {
     }
 
     // to create
+    @PreAuthorize("hasRole('Admin')")
     @PostMapping("/create")
     public ResponseEntity<JobCategoryResponseDto> createJobCategory(
             @Valid @RequestBody JobCategoryRequestDto dto
@@ -41,6 +41,7 @@ public class JobCategoryController {
     }
 
     // to update by id
+    @PreAuthorize("hasRole('Admin')")
     @PutMapping("/{id}")
     public ResponseEntity<JobCategoryResponseDto> updateJobCategory(
             @PathVariable Long id,
@@ -50,6 +51,7 @@ public class JobCategoryController {
     }
 
     // to delete by id
+    @PreAuthorize("hasRole('Admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteJobCategory(@PathVariable Long id) {
         jobCategoryService.deleteJobCategory(id);

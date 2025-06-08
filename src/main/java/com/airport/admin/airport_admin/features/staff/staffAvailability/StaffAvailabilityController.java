@@ -3,7 +3,9 @@ package com.airport.admin.airport_admin.features.staff.staffAvailability;
 import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.staffAvailability.dto.StaffAvailabilityRequestDto;
 import com.airport.admin.airport_admin.features.staff.staffAvailability.dto.StaffAvailabilityResponseDto;
+import com.airport.admin.airport_admin.security.SecurityService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +18,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/staff-availability")
+@RequiredArgsConstructor
 public class StaffAvailabilityController {
 
     private final StaffAvailabilityService staffAvailabilityService;
+    private final SecurityService securityService;
 
-    public StaffAvailabilityController(StaffAvailabilityService staffAvailabilityService) {
-        this.staffAvailabilityService = staffAvailabilityService;
-    }
 
-    @GetMapping("/")
+    @GetMapping
     @PreAuthorize("!hasAnyRole('Crew')")
     public ResponseEntity<Page<StaffAvailabilityResponseDto>> getFilteredAvailability(
             @RequestParam(required = false) Long userId,
@@ -35,19 +36,30 @@ public class StaffAvailabilityController {
         return ResponseEntity.ok(page);
     }
 
-    // Create or update availability for the logged-in user
+    // Create availability for the logged-in user
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<StaffAvailabilityResponseDto> saveAvailability(
-            @Valid @RequestBody StaffAvailabilityRequestDto dto,
-            @AuthenticationPrincipal User user
+    public ResponseEntity<StaffAvailabilityResponseDto> createAvailability(
+            @Valid @RequestBody StaffAvailabilityRequestDto dto
     ) {
-        return ResponseEntity.ok(staffAvailabilityService.saveAvailability(user.getId(), dto));
+        Long userId = securityService.getAuthenticatedUserId();
+        return ResponseEntity.ok(staffAvailabilityService.createAvailability(userId, dto));
     }
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<StaffAvailabilityResponseDto> updateAvailability(
+            @PathVariable Long id,
+            @Valid @RequestBody StaffAvailabilityRequestDto dto
+    ) {
+        Long userId = securityService.getAuthenticatedUserId();
+        return ResponseEntity.ok(staffAvailabilityService.updateAvailability(id,userId, dto));
+    }
+
+
 
     // Get all availability entries for a user (ownership check)
     @GetMapping("/user/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("@securityService.isOwner(#userId, authentication)")
     public ResponseEntity<List<StaffAvailabilityResponseDto>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(staffAvailabilityService.getAvailabilityByUser(userId));
     }

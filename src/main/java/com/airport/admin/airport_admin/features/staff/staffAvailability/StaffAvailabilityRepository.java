@@ -16,5 +16,6 @@ public interface StaffAvailabilityRepository extends
     Optional<StaffAvailability> findByUserAndDate(User user, LocalDate date);
     Optional<StaffAvailability> findByUserIdAndDate(Long userId, LocalDate date);
     List<StaffAvailability> findByUserId(Long userId);
+    boolean existsByUserIdAndDate(Long userId, LocalDate date);
 
 }

@@ -5,11 +5,14 @@ import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestCreateDto;
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestGetDto;
 import com.airport.admin.airport_admin.features.staff.leave.dto.LeaveRequestUpdateDto;
+import com.airport.admin.airport_admin.security.SecurityService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,23 +20,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/leaves")
+@RequiredArgsConstructor
 public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;
-
-    public LeaveRequestController(LeaveRequestService leaveRequestService) {
-        this.leaveRequestService = leaveRequestService;
-    }
+    private final SecurityService securityService;
 
     // User: Apply for leave
     @PostMapping("/apply")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<LeaveRequestGetDto> applyLeave(
-            @Valid @RequestBody LeaveRequestCreateDto dto,
-            @AuthenticationPrincipal User user
-    ) {
-        return ResponseEntity.ok(leaveRequestService.applyLeave(user.getId(), dto));
+    public ResponseEntity<LeaveRequestGetDto> applyLeave(@RequestBody @Valid LeaveRequestCreateDto dto) {
+        Long userId = securityService.getAuthenticatedUserId(); // instance method, not static
+        return ResponseEntity.ok(leaveRequestService.applyLeave(userId, dto));
     }
+
+
 
     // View leave by ID (owner or admin)
     @GetMapping("/{id}")
@@ -82,9 +83,10 @@ public class LeaveRequestController {
     @PreAuthorize("@leaveSecurity.canView(#id, authentication)")
     public ResponseEntity<LeaveRequestGetDto> resubmitLeave(
             @PathVariable Long id,
-            @Valid @RequestBody LeaveRequestCreateDto dto,
-            @AuthenticationPrincipal User user
+            @Valid @RequestBody LeaveRequestCreateDto dto
     ) {
-        return ResponseEntity.ok(leaveRequestService.resubmitLeave(user.getId(), id, dto));
+        Long userId = securityService.getAuthenticatedUserId(); // Safe, consistent
+        return ResponseEntity.ok(leaveRequestService.resubmitLeave(userId, id, dto));
     }
+
 }

@@ -7,6 +7,7 @@ import com.airport.admin.airport_admin.features.Admin.roles.Role;
 import com.airport.admin.airport_admin.features.Admin.user.dto.CreateUserDto;
 import com.airport.admin.airport_admin.features.Admin.user.dto.UpdateUserDto;
 import com.airport.admin.airport_admin.features.Admin.user.dto.UserResponseDto;
+import com.airport.admin.airport_admin.features.Admin.user.dto.UserSummaryDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -64,5 +65,14 @@ public class UserMapper {
 
         return dto;
     }
+
+    // for drop downs we need it
+    public UserSummaryDto toSummary(User user) {
+        String firstName = user.getFirstName();
+        String lastName = user.getLastName();
+        String roleName = user.getRole().getName();
+        return new UserSummaryDto(user.getId(), firstName, lastName, roleName);
+    }
+
 
 }

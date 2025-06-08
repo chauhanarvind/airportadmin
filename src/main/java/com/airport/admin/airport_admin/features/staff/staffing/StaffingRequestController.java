@@ -6,7 +6,9 @@ import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingReque
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestDetailDto;
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestResponseDto;
 import com.airport.admin.airport_admin.features.staff.staffing.dto.StaffingRequest.StaffingRequestUpdateDto;
+import com.airport.admin.airport_admin.security.SecurityService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
@@ -20,20 +22,25 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/staffing-requests")
 @PreAuthorize("!hasAnyRole('Crew')")
+@RequiredArgsConstructor
 public class StaffingRequestController {
 
     @Autowired
     private StaffingRequestService staffingRequestService;
 
+    private final SecurityService securityService;
+
     // 1. Submit a new staffing request
     @PostMapping("/submit")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<StaffingRequestResponseDto> submitRequest(
-            @Valid @RequestBody StaffingRequestCreateDto dto,
-            @AuthenticationPrincipal User user
+            @Valid @RequestBody StaffingRequestCreateDto dto
     ) {
-        StaffingRequestResponseDto response = staffingRequestService.submitRequest(user.getId(), dto);
+        Long userId = securityService.getAuthenticatedUserId();
+        StaffingRequestResponseDto response = staffingRequestService.submitRequest(userId, dto);
         return ResponseEntity.ok(response);
     }
+
 
     // 2. Get a specific request by ID (detailed view)
     @GetMapping("/{id}")
@@ -76,7 +83,7 @@ public class StaffingRequestController {
 
     // 5. Get all requests submitted by a manager (self or admin)
     @GetMapping("/user/{managerId}")
-    @PreAuthorize("#managerId == authentication.principal.id or hasRole('Admin')")
+    @PreAuthorize("@securityService.isOwner(#managerId, authentication) or hasRole('Admin')")
     public ResponseEntity<List<StaffingRequestResponseDto>> getByManagerId(@PathVariable Long managerId) {
         List<StaffingRequestResponseDto> requests = staffingRequestService.getRequestsByManagerId(managerId);
         return ResponseEntity.ok(requests);

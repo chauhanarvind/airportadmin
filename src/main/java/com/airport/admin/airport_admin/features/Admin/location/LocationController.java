@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/locations")
-@PreAuthorize("hasRole('Admin')") //can only be accessed by admin
+ //can only be accessed by admin
 public class LocationController {
 
     private final LocationService locationService;
@@ -33,6 +33,7 @@ public class LocationController {
     }
 
     // to create
+    @PreAuthorize("hasRole('Admin')")
     @PostMapping("/create")
     public ResponseEntity<LocationResponseDto> createLocation(
             @Valid @RequestBody LocationRequestDto dto
@@ -41,6 +42,7 @@ public class LocationController {
     }
 
     // to update by id
+    @PreAuthorize("hasRole('Admin')")
     @PutMapping("/{id}")
     public ResponseEntity<LocationResponseDto> updateLocation(
             @PathVariable Long id,
@@ -50,6 +52,7 @@ public class LocationController {
     }
 
     // to delete by id
+    @PreAuthorize("hasRole('Admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
         locationService.deleteLocation(id);
