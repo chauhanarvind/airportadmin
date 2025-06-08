@@ -33,28 +33,39 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest, HttpServletResponse response) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
-        );
+        try {
+            System.out.println("👉 Authenticating user...");
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtTokenProvider.generateToken(userDetails);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+            );
 
-        // ✅ Set JWT in a secure, cross-site cookie
-        ResponseCookie cookie = ResponseCookie.from("token", token)
-                .httpOnly(true)
-                .secure(true) // Netlify → Render = HTTPS
-                .sameSite("None") // Required for cross-origin cookies
-                .path("/")
-                .maxAge(Duration.ofDays(7))
-                .build();
+            System.out.println("✅ Authenticated!");
 
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        return ResponseEntity.ok().build(); // or return user info if needed
+            System.out.println("🔐 Generating token for: " + userDetails.getUsername());
+
+            String token = jwtTokenProvider.generateToken(userDetails);
+
+            System.out.println("✅ JWT generated: " + token);
+
+            ResponseCookie cookie = ResponseCookie.from("token", token)
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(Duration.ofDays(7))
+                    .build();
+
+            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            System.out.println("🍪 Cookie set successfully");
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace(); // log the stack trace
+            return ResponseEntity.status(500).body("Login error: " + e.getMessage());
+        }
     }
-
-
-
-
 }
