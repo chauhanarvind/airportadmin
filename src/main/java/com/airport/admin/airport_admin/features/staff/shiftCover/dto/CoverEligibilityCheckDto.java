@@ -1,16 +1,16 @@
 package com.airport.admin.airport_admin.features.staff.shiftCover.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 @Getter
+@Setter
 public class CoverEligibilityCheckDto {
-//    private Long originalUserId; will be using authentication principal
+
+    @NotNull(message = "Covering user ID is required")
     private Long coveringUserId;
-    private LocalDate shiftDate;
-    private LocalTime startTime;
-    private LocalTime endTime;
+
+    @NotNull(message = "Shift ID is required")
+    private Long shiftId;
 }

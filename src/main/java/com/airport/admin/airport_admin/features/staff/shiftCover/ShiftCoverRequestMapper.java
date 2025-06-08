@@ -1,9 +1,10 @@
 package com.airport.admin.airport_admin.features.staff.shiftCover;
 
+import com.airport.admin.airport_admin.features.Admin.user.User;
+import com.airport.admin.airport_admin.features.staff.roster.RosterAssignment;
 import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverRequestCreateDto;
 import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverResponseDto;
 import com.airport.admin.airport_admin.features.staff.shiftCover.dto.UserSummaryDto;
-import com.airport.admin.airport_admin.features.Admin.user.User;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -12,28 +13,29 @@ import java.util.List;
 @Component
 public class ShiftCoverRequestMapper {
 
-    // Request DTO (for creating new requests)
+    // Create empty entity (service sets user and shift)
     public ShiftCoverRequest toEntity(ShiftCoverRequestCreateDto dto) {
-        ShiftCoverRequest entity = new ShiftCoverRequest();
-        entity.setShiftDate(dto.getShiftDate());
-        entity.setStartTime(dto.getStartTime());
-        entity.setEndTime(dto.getEndTime());
-        // Do not set user objects here – those are handled in the service
-        return entity;
+        // Don't set shift or users here — those are handled in the service
+        return new ShiftCoverRequest();
     }
 
-
-
-    // Response DTO (for viewing requests)
+    // Convert to response DTO
     public ShiftCoverResponseDto toResponseDto(ShiftCoverRequest entity) {
         ShiftCoverResponseDto dto = new ShiftCoverResponseDto();
+
         dto.setId(entity.getId());
-        dto.setShiftDate(entity.getShiftDate());
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
         dto.setStatus(entity.getStatus());
         dto.setOriginalUser(toUserSummary(entity.getOriginalUser()));
         dto.setCoveringUser(toUserSummary(entity.getCoveringUser()));
+
+        RosterAssignment shift = entity.getShift();
+        if (shift != null) {
+            dto.setShiftId(shift.getId());
+            dto.setShiftDate(shift.getDate());
+            dto.setStartTime(shift.getStartTime());
+            dto.setEndTime(shift.getEndTime());
+        }
+
         return dto;
     }
 
@@ -44,8 +46,6 @@ public class ShiftCoverRequestMapper {
         }
         return result;
     }
-
-
 
     private UserSummaryDto toUserSummary(User user) {
         if (user == null) return null;

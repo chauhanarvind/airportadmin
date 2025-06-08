@@ -3,6 +3,7 @@ package com.airport.admin.airport_admin.features.staff.shiftCover.service;
 import com.airport.admin.airport_admin.enums.LeaveStatus;
 import com.airport.admin.airport_admin.features.Admin.user.User;
 import com.airport.admin.airport_admin.features.staff.leave.LeaveRequestRepository;
+import com.airport.admin.airport_admin.features.staff.roster.RosterAssignment;
 import com.airport.admin.airport_admin.features.staff.roster.RosterAssignmentRepository;
 import com.airport.admin.airport_admin.features.staff.staffAvailability.StaffAvailabilityRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,19 @@ public class CoverEligibilityService {
     private final StaffAvailabilityRepository availabilityRepo;
     private final RosterAssignmentRepository rosterRepo;
 
-    public List<String> checkWarnings(User coveringUser, LocalDate shiftDate, LocalTime startTime, LocalTime endTime) {
+    public List<String> checkWarnings(
+            User coveringUser,
+            User originalUser,
+            RosterAssignment shift
+    )
+    {
         List<String> warnings = new ArrayList<>();
 
-        // 1️Leave check
+        LocalDate shiftDate = shift.getDate();
+        LocalTime startTime = shift.getStartTime();
+        LocalTime endTime = shift.getEndTime();
+
+        // 1️ Leave check
         boolean onLeave = leaveRepo.existsByUserAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                 coveringUser, LeaveStatus.APPROVED, shiftDate, shiftDate
         );
@@ -32,7 +42,7 @@ public class CoverEligibilityService {
             warnings.add("User is on approved leave during this date.");
         }
 
-        //  Availability check
+        // 2️ Availability check
         availabilityRepo.findByUserAndDate(coveringUser, shiftDate).ifPresent(availability -> {
             if (!availability.isAvailable()) {
                 warnings.add("User is marked unavailable on this date.");
@@ -45,7 +55,7 @@ public class CoverEligibilityService {
             }
         });
 
-        //  Roster conflict
+        // 3️ Roster conflict check
         boolean hasConflict = rosterRepo.existsByUserAndShiftDateAndTimeOverlap(
                 coveringUser, shiftDate, startTime, endTime
         );
@@ -53,8 +63,27 @@ public class CoverEligibilityService {
             warnings.add("User is already assigned to an overlapping shift.");
         }
 
+        // 4️ Role mismatch
+        if (!coveringUser.getRole().getName()
+                .equalsIgnoreCase(originalUser.getRole().getName())) {
+            warnings.add("User's role does not match the original user's role.");
+        }
+
+        // 5️ Job role mismatch
+        if (!coveringUser.getJobRole().getRoleName()
+                .equalsIgnoreCase(originalUser.getJobRole().getRoleName())) {
+            warnings.add("User's job role does not match the original user's job role.");
+        }
+
+        // 6️ Job level mismatch
+        if (!coveringUser.getJobLevel().getLevelName()
+                .equalsIgnoreCase(originalUser.getJobLevel().getLevelName())) {
+            warnings.add("User's job level does not match the original user's job level.");
+        }
+
         return warnings;
     }
+
 
     private boolean timeOverlap(LocalTime aStart, LocalTime aEnd, LocalTime bStart, LocalTime bEnd) {
         return !aEnd.isBefore(bStart) && !aStart.isAfter(bEnd);

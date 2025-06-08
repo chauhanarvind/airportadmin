@@ -14,8 +14,11 @@ public class ShiftCoverResponseDto {
     private Long id;
     private UserSummaryDto originalUser;
     private UserSummaryDto coveringUser;
+
+    private Long shiftId;
     private LocalDate shiftDate;
     private LocalTime startTime;
     private LocalTime endTime;
+
     private CoverRequestStatus status;
 }

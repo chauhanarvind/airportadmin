@@ -6,7 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ShiftCoverRequestRepository extends JpaRepository<ShiftCoverRequest, Long>,
@@ -14,7 +17,11 @@ public interface ShiftCoverRequestRepository extends JpaRepository<ShiftCoverReq
 
     List<ShiftCoverRequest> findByOriginalUserId(Long userId);
 
-    List<ShiftCoverRequest> findByCoveringUserId(Long userId);
-
     List<ShiftCoverRequest> findByStatus(CoverRequestStatus status);
+
+    boolean existsByShiftIdAndStatusIn(Long shiftId, List<CoverRequestStatus> statuses);
+
+    Optional<ShiftCoverRequest> findByOriginalUserIdAndShiftId(Long userId, Long shiftId);
+    boolean existsByIdAndOriginalUserId(Long id, Long originalUserId);
+
 }

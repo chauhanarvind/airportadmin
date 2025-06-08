@@ -82,4 +82,13 @@ public class RosterAssignmentController {
         return ResponseEntity.ok(dtoList);
     }
 
+    // Get a specific shift by ID (used in shift-cover detail page)
+    @GetMapping("/{shiftId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<RosterAssignmentDto> getShiftById(@PathVariable Long shiftId) {
+        RosterAssignmentDto dto = rosterAssignmentMapper.toDto(rosterService.getShiftById(shiftId));
+        return ResponseEntity.ok(dto);
+    }
+
+
 }

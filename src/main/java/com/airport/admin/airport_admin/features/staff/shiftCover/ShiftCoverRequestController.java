@@ -7,6 +7,7 @@ import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverR
 import com.airport.admin.airport_admin.features.staff.shiftCover.dto.ShiftCoverResponseDto;
 import com.airport.admin.airport_admin.features.staff.shiftCover.service.CoverEligibilityService;
 import com.airport.admin.airport_admin.features.staff.shiftCover.service.ShiftCoverRequestService;
+import com.airport.admin.airport_admin.security.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,17 +26,20 @@ public class ShiftCoverRequestController {
 
     private final ShiftCoverRequestService coverRequestService;
     private final CoverEligibilityService coverEligibilityService;
+    private final SecurityService securityService;
 
     // Authenticated user submits request (userId derived from session)
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ShiftCoverResponseDto> submitRequest(
-            @RequestBody ShiftCoverRequestCreateDto dto,
-            @AuthenticationPrincipal User user
+            @RequestBody ShiftCoverRequestCreateDto dto
     ) {
-        ShiftCoverResponseDto saved = coverRequestService.submitCoverRequest(user.getId(), dto);
+        Long userId = securityService.getAuthenticatedUserId();
+        System.out.println("user id =="+userId);
+        ShiftCoverResponseDto saved = coverRequestService.submitCoverRequest(userId, dto);
         return ResponseEntity.ok(saved);
     }
+
 
     // Admin: Filtered list
     @GetMapping
@@ -55,24 +59,34 @@ public class ShiftCoverRequestController {
 
     // Get all for logged-in user
     @GetMapping("/user/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id or hasRole('Admin')")
+    @PreAuthorize("@securityService.isOwner(#userId, authentication) or hasRole('Admin')")
     public ResponseEntity<List<ShiftCoverResponseDto>> getAllUserCoverRequests(@PathVariable Long userId) {
         return ResponseEntity.ok(coverRequestService.getAllUserCoverRequests(userId));
     }
 
-    // Admin: Get one
-    @GetMapping("cover-request/{id}")
+    // Get one
+    @GetMapping("/{id}")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<ShiftCoverResponseDto> getCoverRequest(@PathVariable Long id) {
         return ResponseEntity.ok(coverRequestService.getCoverRequestById(id));
     }
 
-    // Pre-check warnings
-    @PostMapping("/check")
-    public ResponseEntity<List<String>> checkCoverEligibility(@RequestBody CoverEligibilityCheckDto dto) {
-        return ResponseEntity.ok(coverRequestService.getApprovalWarnings(dto));
+    @GetMapping("/shift/{shiftId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ShiftCoverResponseDto> getRequestByShift(@PathVariable Long shiftId) {
+        Long userId = securityService.getAuthenticatedUserId();
+        return ResponseEntity.ok(coverRequestService.getByUserAndShift(userId, shiftId));
     }
 
+    // Pre-check warnings
+    //for front-end user before submission
+    @PostMapping("/check")
+    public ResponseEntity<List<String>> checkCoverEligibility(@RequestBody CoverEligibilityCheckDto dto) {
+        Long originalUserId = securityService.getAuthenticatedUserId();
+        return ResponseEntity.ok(coverRequestService.getApprovalWarnings(dto, originalUserId ));
+    }
+
+    //for admin
     @GetMapping("/{id}/warnings")
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<List<String>> getRequestWarnings(@PathVariable Long id) {
@@ -99,4 +113,12 @@ public class ShiftCoverRequestController {
         coverRequestService.rejectRequest(id);
         return ResponseEntity.ok().build();
     }
+
+    @PreAuthorize("hasRole('Admin') or @securityService.isOwnerOfCoverRequest(#id, authentication)")
+    @PutMapping("/{id}/resubmit")
+    public ResponseEntity<Void> resubmitRequest(@PathVariable Long id) {
+        coverRequestService.resubmitRequest(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

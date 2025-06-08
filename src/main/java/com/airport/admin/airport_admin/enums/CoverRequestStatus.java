@@ -4,5 +4,6 @@ public enum CoverRequestStatus {
     PENDING,
     APPROVED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+    RESUBMITTED
 }

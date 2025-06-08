@@ -5,6 +5,7 @@ import com.airport.admin.airport_admin.features.Admin.jobLevel.JobLevel;
 import com.airport.admin.airport_admin.features.Admin.jobRole.JobRole;
 import com.airport.admin.airport_admin.features.staff.leave.LeaveRequestRepository;
 import com.airport.admin.airport_admin.features.staff.roster.RosterAssignment;
+import com.airport.admin.airport_admin.features.staff.roster.RosterAssignmentDto;
 import com.airport.admin.airport_admin.features.staff.roster.RosterAssignmentRepository;
 import com.airport.admin.airport_admin.features.staff.staffAvailability.StaffAvailabilityRepository;
 import com.airport.admin.airport_admin.features.staff.staffing.model.StaffingRequest;
@@ -137,4 +138,9 @@ public class RosterService {
                 .orElse(false);
     }
 
+    public RosterAssignment getShiftById(Long shiftId) {
+        return  rosterAssignmentRepository.findById(shiftId)
+                .orElseThrow(() -> new RuntimeException("Shift not found"));
+
+    }
 }

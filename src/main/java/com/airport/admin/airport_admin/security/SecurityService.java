@@ -1,12 +1,15 @@
 package com.airport.admin.airport_admin.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import com.airport.admin.airport_admin.features.staff.shiftCover.ShiftCoverRequestRepository;
 
 @Component
 public class SecurityService {
-
+    @Autowired
+    private ShiftCoverRequestRepository coverRequestRepo;
     /**
      * Returns the ID of the currently authenticated user.
      * Throws IllegalStateException if unauthenticated or unsupported principal type.
@@ -75,5 +78,18 @@ public class SecurityService {
                 auth.getAuthorities().stream()
                         .anyMatch(a -> a.getAuthority().equals("ROLE_" + roleName));
     }
+
+
+
+    public boolean isOwnerOfCoverRequest(Long requestId, Authentication authentication) {
+        try {
+            Long authUserId = getAuthenticatedUserId(authentication);
+            return coverRequestRepo.existsByIdAndOriginalUserId(requestId, authUserId);
+        } catch (IllegalStateException e) {
+            System.out.println("❌ isOwnerOfCoverRequest failed: " + e.getMessage());
+            return false;
+        }
+    }
+
 
 }
