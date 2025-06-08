@@ -1,8 +1,0 @@
-services:
-  - type: web
-    name: airport-admin
-    env: java
-    buildCommand: "./mvnw clean package -DskipTests"
-    startCommand: "java -jar target/airport-admin-0.0.1-SNAPSHOT.jar"
-    branch: main
-    repo: https://github.com/chauhanarvind/airportadmin
