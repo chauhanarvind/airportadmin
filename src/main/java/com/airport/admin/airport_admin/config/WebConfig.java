@@ -18,7 +18,7 @@ public class WebConfig {
                                 "http://localhost:3000", // for local dev
                                 "https://airport-administration.netlify.app" // for deployed site
                         )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }

@@ -32,7 +32,6 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
 
     }
-
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -40,9 +39,11 @@ public class AuthController {
         }
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        String fullRole = userDetails.getAuthorities().iterator().next().getAuthority();
-        String cleanRole = fullRole.replace("ROLE_", "");
+        String cleanRole = userDetails.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority()
+                .replace("ROLE_", "");
 
         Map<String, Object> response = new HashMap<>();
         response.put("id", userDetails.getId());
@@ -51,6 +52,7 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
 
 
     @GetMapping("/logout")
