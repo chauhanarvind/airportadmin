@@ -72,40 +72,41 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
-            System.out.println("👉 Authenticating user...");
+            System.out.println("Authenticating user...");
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
 
-            System.out.println("✅ Authenticated!");
+            System.out.println("Authenticated!");
 
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-            System.out.println("🔐 Generating token for: " + userDetails.getUsername());
+            System.out.println("Generating token for: " + userDetails.getUsername());
 
             String token = jwtTokenProvider.generateToken(userDetails);
 
-            System.out.println("✅ JWT generated: " + token);
+            System.out.println("JWT generated: " + token);
 
-            ResponseCookie cookie = ResponseCookie.from("token", token)
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("None")
-                    .path("/")
-                    .maxAge(Duration.ofDays(7))
-                    .build();
+            String cleanRole = userDetails.getAuthorities()
+                    .iterator()
+                    .next()
+                    .getAuthority()
+                    .replace("ROLE_", "");
 
-            response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("token", token);
+            responseBody.put("id", userDetails.getId());
+            responseBody.put("email", userDetails.getUsername());
+            responseBody.put("role", cleanRole);
 
-            System.out.println("🍪 Cookie set successfully");
-
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
-            e.printStackTrace(); // log the stack trace
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Login error: " + e.getMessage());
         }
     }
+
 }
