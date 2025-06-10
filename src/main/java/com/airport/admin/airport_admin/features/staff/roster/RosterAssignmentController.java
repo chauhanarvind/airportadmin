@@ -38,16 +38,16 @@ public class RosterAssignmentController {
         return ResponseEntity.ok("Roster generated successfully.");
     }
 
-    // Admin: Check if roster already exists for a request
+    // Check if roster already exists for a request
     @GetMapping("/check/{requestId}")
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("isAuthenticated() and hasAnyRole('Admin', 'Manager', 'Supervisor')")
     public ResponseEntity<Boolean> checkIfRosterExists(@PathVariable Long requestId) {
         return ResponseEntity.ok(rosterService.rosterExistsForRequest(requestId));
     }
 
     // View roster assignments for a request
     @GetMapping("/view/{requestId}")
-    @PreAuthorize("hasAnyRole('Admin', 'Manager', 'Supervisor')")
+    @PreAuthorize("isAuthenticated() and hasAnyRole('Admin', 'Manager', 'Supervisor')")
     public ResponseEntity<List<RosterAssignmentDto>> getRosterForRequest(@PathVariable Long requestId) {
         Long currentUserId = securityService.getAuthenticatedUserId(); // safe, consistent
         boolean isAdmin = securityService.hasRole("Admin");
