@@ -28,7 +28,6 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
-        System.out.println("JwtTokenProvider initialized"); // confirm if it's loaded
         this.secretKey = getSignInKey();
     }
 

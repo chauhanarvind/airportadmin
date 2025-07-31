@@ -35,7 +35,7 @@ public class ShiftCoverRequestController {
             @RequestBody ShiftCoverRequestCreateDto dto
     ) {
         Long userId = securityService.getAuthenticatedUserId();
-        System.out.println("user id =="+userId);
+
         ShiftCoverResponseDto saved = coverRequestService.submitCoverRequest(userId, dto);
         return ResponseEntity.ok(saved);
     }

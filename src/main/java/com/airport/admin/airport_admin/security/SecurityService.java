@@ -44,7 +44,6 @@ public class SecurityService {
             Long authUserId = getAuthenticatedUserId(authentication);
             return authUserId.equals(userId);
         } catch (IllegalStateException e) {
-            System.out.println("❌ isOwner failed: " + e.getMessage());
             return false;
         }
     }
@@ -86,7 +85,6 @@ public class SecurityService {
             Long authUserId = getAuthenticatedUserId(authentication);
             return coverRequestRepo.existsByIdAndOriginalUserId(requestId, authUserId);
         } catch (IllegalStateException e) {
-            System.out.println("❌ isOwnerOfCoverRequest failed: " + e.getMessage());
             return false;
         }
     }

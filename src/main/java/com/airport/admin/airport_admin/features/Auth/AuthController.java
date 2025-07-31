@@ -74,21 +74,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
         try {
-            System.out.println("Authenticating user...");
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
             );
 
-            System.out.println("Authenticated!");
 
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-            System.out.println("Generating token for: " + userDetails.getUsername());
 
             String token = jwtTokenProvider.generateToken(userDetails);
 
-            System.out.println("JWT generated: " + token);
 
             String cleanRole = userDetails.getAuthorities()
                     .iterator()

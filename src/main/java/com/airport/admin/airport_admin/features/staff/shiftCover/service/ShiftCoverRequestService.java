@@ -39,10 +39,7 @@ public class ShiftCoverRequestService {
         User coveringUser = userRepo.findById(dto.getCoveringUserId())
                 .orElseThrow(() -> new RuntimeException("Covering user not found"));
 
-        System.out.println("covering user=="+coveringUser);
 
-
-        System.out.println("shift ==" + dto.getShiftId());
         var shift = rosterRepo.findById(dto.getShiftId())
                 .orElseThrow(() -> new RuntimeException("Shift not found"));
 
